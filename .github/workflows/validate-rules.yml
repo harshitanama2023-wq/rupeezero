@@ -1,0 +1,22 @@
+name: Validate tax rules
+on:
+  push:
+    paths: ['tax-rules.json', 'scripts/**', 'index.html']
+  pull_request:
+    paths: ['tax-rules.json', 'scripts/**', 'index.html']
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: node scripts/validate-rules.js tax-rules.json
+      - name: Check embedded copy matches tax-rules.json
+        run: |
+          cp index.html /tmp/before.html
+          node scripts/embed-rules.js
+          if ! cmp -s index.html /tmp/before.html; then
+            echo "::error::index.html has stale embedded rules. Run: node scripts/embed-rules.js and commit."
+            exit 1
+          fi

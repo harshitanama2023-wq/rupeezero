@@ -1,0 +1,67 @@
+name: Budget / rule-change reminder
+# Opens an issue with a checklist whenever Indian tax rules are likely to have changed:
+#  - 2 Feb  : day after the Union Budget speech
+#  - 2 Apr  : new financial year starts (Finance Act usually assented by end-March)
+#  - 1 Jul / 1 Oct / 1 Jan : small-savings rates are revised quarterly
+# It also runs when the current FY has no ruleset yet (checked daily) so a missing year is never silent.
+on:
+  schedule:
+    - cron: '30 3 2 2 *'
+    - cron: '30 3 2 4 *'
+    - cron: '30 3 1 1,7,10 *'
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+permissions:
+  issues: write
+  contents: read
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - id: check
+        name: Decide whether an issue is needed
+        run: |
+          set -e
+          TODAY=$(date -u +%m-%d)
+          MISSING=$(node -e '
+            const r=require("./tax-rules.json"); const d=new Date();
+            const y=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1;
+            const fy=`${y}-${String((y+1)%100).padStart(2,"0")}`;
+            process.stdout.write(r.rulesets[fy]?"":fy);')
+          REASON=""
+          case "$TODAY" in
+            02-02) REASON="Union Budget was presented yesterday";;
+            04-02) REASON="New financial year has started";;
+            01-01|07-01|10-01) REASON="Quarterly small-savings rate revision";;
+          esac
+          if [ -n "$MISSING" ]; then REASON="${REASON:+$REASON; }no ruleset exists for current FY $MISSING"; fi
+          echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.reason != ''
+        uses: actions/github-script@v7
+        env:
+          REASON: ${{ steps.check.outputs.reason }}
+        with:
+          script: |
+            const title = `Verify Indian tax rules — ${process.env.REASON}`;
+            const { data: open } = await github.rest.issues.listForRepo({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'tax-rules' });
+            if (open.some(i => i.title === title)) return;
+            const body = [
+              `Trigger: **${process.env.REASON}**`, '',
+              'Update `tax-rules.json`, then run `node scripts/validate-rules.js` and `node scripts/embed-rules.js`, and commit.', '',
+              '### Checklist',
+              '- [ ] New-regime slabs, standard deduction, 87A rebate limit/max, marginal relief',
+              '- [ ] Old-regime slabs (all three age bands), standard deduction, 87A',
+              '- [ ] Surcharge bands and capital-gains cap; cess',
+              '- [ ] Chapter VI-A limits: 80C, 80CCD(1B), 80D, 24(b), 80TTA/TTB, 80GG, 80EEB; HRA %',
+              '- [ ] Capital gains: STCG/LTCG rates, exemption, holding periods, CII',
+              '- [ ] Presumptive 44AD/44ADA limits & rates; tax-audit thresholds',
+              '- [ ] Advance-tax dates; ITR due dates for the new year',
+              '- [ ] GST slabs, registration and composition thresholds',
+              '- [ ] Small-savings rates (PPF, SSY, SCSS, NSC, KVP, POMIS, RD, TD)',
+              '- [ ] `changes_this_year` and `sources` filled in; `status` set to `verified`; `updated` date bumped', '',
+              'Primary sources: indiabudget.gov.in · incometax.gov.in · cbic-gst.gov.in · nsiindia.gov.in'
+            ].join('\n');
+            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ['tax-rules'] });
