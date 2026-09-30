@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "updated": "2026-09-30",
+  "maintainer_note": "Edit ONLY this file when the Union Budget or a CBDT notification changes a number. Add a new key under rulesets for the new financial year (e.g. 2027-28); copy the previous year and change what moved. Run scripts/validate-rules.js before committing.",
+  "default_fy": "2026-27",
+  "rulesets": {
+    "2026-27": {
+      "label": "FY 2026-27 (Tax Year 2026-27 under the Income-tax Act, 2025)",
+      "verified_on": "2026-09-30",
+      "status": "verified",
+      "sources": [
+        "Union Budget 2026-27 (1 Feb 2026) — no change to slabs, rebate, surcharge or cess",
+        "Finance Act 2025 slab structure carried forward",
+        "Income-tax Act 2025 in force from 1 Apr 2026 (renumbering only)",
+        "56th GST Council (GST 2.0) rates effective 22 Sep 2025"
+      ],
+      "cess": 0.04,
+      "new_regime": {
+        "slabs": [[400000, 0], [800000, 0.05], [1200000, 0.10], [1600000, 0.15], [2000000, 0.20], [2400000, 0.25], [null, 0.30]],
+        "standard_deduction": 75000,
+        "rebate_income_limit": 1200000,
+        "rebate_max": 60000,
+        "rebate_marginal_relief": true,
+        "rebate_excludes_special_rate_income": true,
+        "employer_nps_pct_of_basic": 0.14,
+        "surcharge": [[5000000, 0.10], [10000000, 0.15], [20000000, 0.25]],
+        "surcharge_cap_capital_gains": 0.15,
+        "family_pension_deduction": 25000
+      },
+      "old_regime": {
+        "slabs_below_60": [[250000, 0], [500000, 0.05], [1000000, 0.20], [null, 0.30]],
+        "slabs_60_to_79": [[300000, 0], [500000, 0.05], [1000000, 0.20], [null, 0.30]],
+        "slabs_80_plus": [[500000, 0], [1000000, 0.20], [null, 0.30]],
+        "standard_deduction": 50000,
+        "rebate_income_limit": 500000,
+        "rebate_max": 12500,
+        "employer_nps_pct_of_basic_private": 0.10,
+        "employer_nps_pct_of_basic_govt": 0.14,
+        "surcharge": [[5000000, 0.10], [10000000, 0.15], [20000000, 0.25], [50000000, 0.37]],
+        "surcharge_cap_capital_gains": 0.15,
+        "family_pension_deduction": 15000
+      },
+      "deductions_old_regime": {
+        "80C": 150000,
+        "80CCD_1B": 50000,
+        "80D_self": 25000,
+        "80D_self_senior": 50000,
+        "80D_parents": 25000,
+        "80D_parents_senior": 50000,
+        "24b_self_occupied": 200000,
+        "80TTA": 10000,
+        "80TTB_senior": 50000,
+        "80GG_max": 60000,
+        "80EEB_ev_loan": 150000,
+        "hra_metro_pct": 0.50,
+        "hra_nonmetro_pct": 0.40
+      },
+      "house_property": {
+        "standard_deduction_pct": 0.30,
+        "loss_setoff_cap": 200000
+      },
+      "capital_gains": {
+        "equity_stcg_rate": 0.20,
+        "equity_ltcg_rate": 0.125,
+        "equity_ltcg_exemption": 125000,
+        "other_ltcg_rate": 0.125,
+        "equity_holding_months": 12,
+        "other_holding_months": 24,
+        "cost_inflation_index": 384,
+        "note": "Debt mutual funds bought on/after 1 Apr 2023 are taxed at slab rates regardless of holding period. Property bought before 23 Jul 2024: option of 20% with indexation."
+      },
+      "presumptive": {
+        "44AD_turnover_limit": 20000000,
+        "44AD_turnover_limit_digital": 30000000,
+        "44AD_rate_cash": 0.08,
+        "44AD_rate_digital": 0.06,
+        "44ADA_receipts_limit": 5000000,
+        "44ADA_receipts_limit_digital": 7500000,
+        "44ADA_rate": 0.50,
+        "digital_threshold_pct": 0.95,
+        "lock_in_years": 5,
+        "new_act_section": "Section 58 of the Income-tax Act, 2025"
+      },
+      "tax_audit": {
+        "business_turnover": 10000000,
+        "business_turnover_digital": 100000000,
+        "profession_receipts": 5000000
+      },
+      "advance_tax": {
+        "threshold": 10000,
+        "instalments": [["15 Jun", 0.15], ["15 Sep", 0.45], ["15 Dec", 0.75], ["15 Mar", 1.00]],
+        "presumptive_single_instalment": "15 Mar"
+      },
+      "gst": {
+        "registration_threshold_goods": 4000000,
+        "registration_threshold_services": 2000000,
+        "registration_threshold_special_states_goods": 2000000,
+        "registration_threshold_special_states_services": 1000000,
+        "rate_slabs": [0, 5, 18, 40],
+        "special_rates": {"gold": 3, "rough_diamonds": 0.25},
+        "composition": {"traders_manufacturers": 1, "restaurants": 5, "services": 6},
+        "composition_turnover_limit": 15000000
+      },
+      "filing": {
+        "itr_due_non_audit": "31 Jul 2027",
+        "itr_due_audit": "31 Oct 2027",
+        "belated_return_until": "31 Dec 2027",
+        "old_regime_opt_in_form_business": "Form 10-IEA (once; can switch back to new only once in a lifetime for business/profession income)",
+        "old_regime_opt_in_form_salaried": "Choose in the ITR each year; tell employer via Form 12BB for TDS"
+      },
+      "small_savings_rates": {
+        "as_of": "Q2 FY 2026-27 (indicative — verify on nsiindia.gov.in)",
+        "PPF": 7.1,
+        "EPF": 8.25,
+        "SSY": 8.2,
+        "SCSS": 8.2,
+        "NSC": 7.7,
+        "KVP": 7.5,
+        "POMIS": 7.4,
+        "RD_5yr": 6.7,
+        "TD_5yr": 7.5
+      },
+      "changes_this_year": [
+        "Income-tax Act 2025 replaces the 1961 Act: 80C → 123, 80CCD → 124, 80D → 126, 111A/112/112A → 196/197/198, 44AD/44ADA → 58. Limits unchanged.",
+        "Sovereign Gold Bonds bought in the secondary market from 1 Apr 2026 lose tax-free maturity.",
+        "Share buybacks taxed as capital gains in the shareholder's hands."
+      ]
+    },
+    "2025-26": {
+      "label": "FY 2025-26 (AY 2026-27)",
+      "verified_on": "2026-09-30",
+      "status": "verified",
+      "sources": ["Finance Act 2025 (Union Budget 1 Feb 2025)"],
+      "cess": 0.04,
+      "new_regime": {
+        "slabs": [[400000, 0], [800000, 0.05], [1200000, 0.10], [1600000, 0.15], [2000000, 0.20], [2400000, 0.25], [null, 0.30]],
+        "standard_deduction": 75000,
+        "rebate_income_limit": 1200000,
+        "rebate_max": 60000,
+        "rebate_marginal_relief": true,
+        "rebate_excludes_special_rate_income": true,
+        "employer_nps_pct_of_basic": 0.14,
+        "surcharge": [[5000000, 0.10], [10000000, 0.15], [20000000, 0.25]],
+        "surcharge_cap_capital_gains": 0.15,
+        "family_pension_deduction": 25000
+      },
+      "old_regime": {
+        "slabs_below_60": [[250000, 0], [500000, 0.05], [1000000, 0.20], [null, 0.30]],
+        "slabs_60_to_79": [[300000, 0], [500000, 0.05], [1000000, 0.20], [null, 0.30]],
+        "slabs_80_plus": [[500000, 0], [1000000, 0.20], [null, 0.30]],
+        "standard_deduction": 50000,
+        "rebate_income_limit": 500000,
+        "rebate_max": 12500,
+        "employer_nps_pct_of_basic_private": 0.10,
+        "employer_nps_pct_of_basic_govt": 0.14,
+        "surcharge": [[5000000, 0.10], [10000000, 0.15], [20000000, 0.25], [50000000, 0.37]],
+        "surcharge_cap_capital_gains": 0.15,
+        "family_pension_deduction": 15000
+      },
+      "deductions_old_regime": {
+        "80C": 150000, "80CCD_1B": 50000, "80D_self": 25000, "80D_self_senior": 50000, "80D_parents": 25000, "80D_parents_senior": 50000,
+        "24b_self_occupied": 200000, "80TTA": 10000, "80TTB_senior": 50000, "80GG_max": 60000, "80EEB_ev_loan": 150000,
+        "hra_metro_pct": 0.50, "hra_nonmetro_pct": 0.40
+      },
+      "house_property": {"standard_deduction_pct": 0.30, "loss_setoff_cap": 200000},
+      "capital_gains": {"equity_stcg_rate": 0.20, "equity_ltcg_rate": 0.125, "equity_ltcg_exemption": 125000, "other_ltcg_rate": 0.125, "equity_holding_months": 12, "other_holding_months": 24, "cost_inflation_index": 376, "note": ""},
+      "presumptive": {"44AD_turnover_limit": 20000000, "44AD_turnover_limit_digital": 30000000, "44AD_rate_cash": 0.08, "44AD_rate_digital": 0.06, "44ADA_receipts_limit": 5000000, "44ADA_receipts_limit_digital": 7500000, "44ADA_rate": 0.50, "digital_threshold_pct": 0.95, "lock_in_years": 5, "new_act_section": "Sections 44AD / 44ADA of the Income-tax Act, 1961"},
+      "tax_audit": {"business_turnover": 10000000, "business_turnover_digital": 100000000, "profession_receipts": 5000000},
+      "advance_tax": {"threshold": 10000, "instalments": [["15 Jun", 0.15], ["15 Sep", 0.45], ["15 Dec", 0.75], ["15 Mar", 1.00]], "presumptive_single_instalment": "15 Mar"},
+      "gst": {"registration_threshold_goods": 4000000, "registration_threshold_services": 2000000, "registration_threshold_special_states_goods": 2000000, "registration_threshold_special_states_services": 1000000, "rate_slabs": [0, 5, 18, 40], "special_rates": {"gold": 3, "rough_diamonds": 0.25}, "composition": {"traders_manufacturers": 1, "restaurants": 5, "services": 6}, "composition_turnover_limit": 15000000},
+      "filing": {"itr_due_non_audit": "31 Jul 2026", "itr_due_audit": "31 Oct 2026", "belated_return_until": "31 Dec 2026", "old_regime_opt_in_form_business": "Form 10-IEA", "old_regime_opt_in_form_salaried": "Choose in the ITR each year"},
+      "small_savings_rates": {"as_of": "FY 2025-26", "PPF": 7.1, "EPF": 8.25, "SSY": 8.2, "SCSS": 8.2, "NSC": 7.7, "KVP": 7.5, "POMIS": 7.4, "RD_5yr": 6.7, "TD_5yr": 7.5},
+      "changes_this_year": ["New-regime slabs widened to ₹4 lakh bands; 87A rebate raised to ₹60,000 making ₹12 lakh tax-free."]
+    }
+  }
+}

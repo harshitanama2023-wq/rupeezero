@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RupeeZero — budgeting, tax and investing for every Indian earner</title>
+<meta name="rules-url" content="tax-rules.json">
+<meta name="rules-remote-url" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F4F6F2; --surface:#FFFFFF; --surface2:#EDF1EC; --line:#D9E0DA;
+  --ink:#16211F; --mute:#62706C; --teal:#0E5C55; --teal-soft:#DDEDEA; --teal-ink:#FFFFFF;
+  --gold:#E8A317; --gold-soft:#FBEFD3; --rose:#B4432F; --rose-soft:#F8E1DC; --green:#2F7D4F; --green-soft:#DDF0E3;
+  --shadow:0 1px 2px rgba(22,33,31,.06), 0 8px 24px -12px rgba(22,33,31,.18);
+  --r-s:6px; --r-m:12px; --r-l:20px;
+  --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1614; --surface:#171F1C; --surface2:#1E2825; --line:#2B3733;
+    --ink:#E9EFEC; --mute:#98A6A1; --teal:#4FB8AC; --teal-soft:#153431; --teal-ink:#0F1614;
+    --gold:#F0B94A; --gold-soft:#3A2E13; --rose:#E0745F; --rose-soft:#3E211C; --green:#6CCB8E; --green-soft:#183A27;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1614; --surface:#171F1C; --surface2:#1E2825; --line:#2B3733;
+  --ink:#E9EFEC; --mute:#98A6A1; --teal:#4FB8AC; --teal-soft:#153431; --teal-ink:#0F1614;
+  --gold:#F0B94A; --gold-soft:#3A2E13; --rose:#E0745F; --rose-soft:#3E211C; --green:#6CCB8E; --green-soft:#183A27;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+a{color:var(--teal)}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none;color:var(--ink)}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-weight:800;font-size:18px}
+.top nav{display:flex;gap:6px;margin-left:8px}
+.top nav a{text-decoration:none;color:var(--mute);font-weight:600;padding:8px 12px;border-radius:var(--r-s)}
+.top nav a:hover{color:var(--ink);background:var(--surface2)}
+.top .grow{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:10px;padding:10px 16px;font-weight:700;background:var(--teal);color:var(--teal-ink);text-decoration:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--surface2);filter:none}
+.btn.gold{background:var(--gold);color:#1a1200}
+.btn.sm{padding:7px 12px;font-size:14px;border-radius:8px}
+.btn.danger{background:var(--rose-soft);color:var(--rose)}
+.icon-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;width:36px;height:36px;display:grid;place-items:center}
+.icon-btn:hover{background:var(--surface2)}
+@media (max-width:760px){.top nav{display:none}}
+
+/* ---------- hero ---------- */
+.hero{max-width:1180px;margin:0 auto;padding:64px 20px 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(38px,5.4vw,64px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin:0 0 20px;max-width:14ch}
+.hero p{font-size:18px;color:var(--mute);max-width:52ch;margin:0 0 28px}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero small{display:block;margin-top:16px;color:var(--mute);font-size:14px}
+.ledger-demo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow);padding:22px;transform:rotate(-1.2deg)}
+.ledger-demo .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line);font-weight:600}
+.ledger-demo .row span:last-child{color:var(--mute)}
+.ledger-demo .zero{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;font-weight:800;font-size:22px}
+.ledger-demo .zero em{font-style:normal;color:var(--teal)}
+@media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:40px}.ledger-demo{transform:none}}
+
+/* ---------- pillars ---------- */
+.pillars{max-width:1180px;margin:0 auto;padding:16px 20px 56px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pillar{padding:20px 22px;border-left:3px solid var(--teal)}
+.pillar h3{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+.pillar p{margin:0;color:var(--mute);font-size:15px}
+@media (max-width:760px){.pillars{grid-template-columns:1fr}}
+
+/* ---------- app shell ---------- */
+.app{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.app-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.app-head h2{margin:0;font-size:26px;letter-spacing:-.02em}
+.month{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:3px}
+.month button{border:0;background:transparent;width:34px;height:32px;border-radius:7px}
+.month button:hover{background:var(--surface2)}
+.month strong{min-width:150px;text-align:center;font-weight:700}
+.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin-left:auto}
+.tabs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:700;color:var(--mute)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+@media (max-width:760px){.tabs{margin-left:0;width:100%;overflow-x:auto}.tabs button{flex:1;padding:8px 8px;font-size:14px}}
+.panel[hidden]{display:none}
+
+/* ---------- Left-to-plan strip (the memorable element) ---------- */
+.ltp{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;margin-bottom:22px;box-shadow:var(--shadow)}
+.ltp .amt{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1}
+.ltp .amt.zero{color:var(--teal)}
+.ltp .amt.over{color:var(--rose)}
+.ltp .amt.left{color:var(--gold)}
+.ltp .lbl{font-size:14px;color:var(--mute);margin-top:4px;font-weight:600}
+.ltp .bar{height:10px;background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+.ltp .bar i{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:99px;transition:width .35s ease}
+.ltp .bar i.over{background:var(--rose)}
+.ltp .bar-lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:6px}
+.ltp .stat{text-align:right;font-size:14px;color:var(--mute)}
+.ltp .stat b{display:block;color:var(--ink);font-size:18px}
+@media (max-width:760px){.ltp{grid-template-columns:1fr;gap:12px;position:static}.ltp .stat{text-align:left}}
+
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start}
+@media (max-width:960px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- ledger groups ---------- */
+.group{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);margin-bottom:16px;overflow:hidden}
+.group-head{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;align-items:center;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--line);font-size:13px;color:var(--mute);font-weight:700}
+.group-head .name{font-size:16px;color:var(--ink);font-weight:800;display:flex;align-items:center;gap:8px}
+.group-head .name input{border:0;background:transparent;font-weight:800;font-size:16px;padding:2px 4px;border-radius:4px;width:100%;min-width:0}
+.group-head .name input:focus{background:var(--surface)}
+.group-head .col{text-align:right}
+.item{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .nm{display:flex;flex-direction:column;min-width:0}
+.item .nm input{border:0;background:transparent;font-weight:600;padding:4px 6px;border-radius:4px;width:100%;min-width:0}
+.item .nm input:focus{background:var(--surface2)}
+.item .nm .prog{height:4px;background:var(--surface2);border-radius:99px;margin:4px 6px 0;overflow:hidden}
+.item .nm .prog i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.item .nm .prog i.over{background:var(--rose)}
+.item .nm .tag{font-size:11px;color:var(--mute);margin:3px 6px 0;font-weight:600}
+.money{width:100%;text-align:right;border:1px solid transparent;background:transparent;padding:6px 8px;border-radius:6px;font-weight:600}
+.money:hover{border-color:var(--line)}
+.money:focus{background:var(--surface2);border-color:var(--teal)}
+.ro{text-align:right;font-weight:600;padding:6px 8px}
+.ro.over{color:var(--rose)}
+.ro.mute{color:var(--mute)}
+.x{border:0;background:transparent;color:var(--mute);width:32px;height:32px;border-radius:6px;font-size:18px;line-height:1}
+.x:hover{background:var(--rose-soft);color:var(--rose)}
+.add-line{padding:8px 16px;display:flex;gap:8px}
+.add-line button{border:1px dashed var(--line);background:transparent;color:var(--teal);font-weight:700;padding:8px 12px;border-radius:8px;font-size:14px}
+.add-line button:hover{background:var(--teal-soft)}
+.group-foot{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;padding:8px 16px;background:var(--surface2);border-top:1px solid var(--line);font-size:14px;font-weight:700}
+.group-foot .r{text-align:right}
+@media (max-width:760px){
+  .group-head,.item,.group-foot{grid-template-columns:1fr 90px 90px 28px}
+  .group-head .c3,.item .c3,.group-foot .c3{display:none}
+  .money,.ro{padding:6px 4px;font-size:14px}
+}
+
+/* ---------- side panel ---------- */
+.side .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;margin-bottom:14px}
+.side h3{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
+.side .kv{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+.side .kv span:first-child{color:var(--mute)}
+.side .kv b{font-weight:700}
+.side .kv.total{border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--surface2);color:var(--mute)}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.warn{background:var(--gold-soft);color:#7a5200}
+.pill.bad{background:var(--rose-soft);color:var(--rose)}
+.hint{font-size:13px;color:var(--mute);margin:8px 0 0}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:700;color:var(--mute)}
+.field input,.field select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;width:100%}
+.field input:focus,.field select:focus{border-color:var(--teal)}
+.field .sub{font-size:12px;color:var(--mute)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inline-add{display:flex;gap:8px;align-items:flex-end}
+.inline-add .field{flex:1;margin:0}
+
+/* ---------- transactions ---------- */
+.tx-form{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;display:grid;grid-template-columns:130px 1fr 150px 1fr auto;gap:12px;align-items:end;margin-bottom:18px}
+.tx-form .field{margin:0}
+@media (max-width:860px){.tx-form{grid-template-columns:1fr 1fr}.tx-form .field.wide,.tx-form .btn{grid-column:1/-1}}
+.tx-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.tx{display:grid;grid-template-columns:96px 1fr 180px 130px 36px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tx:last-child{border-bottom:0}
+.tx .d{color:var(--mute);font-size:14px}
+.tx .cat{font-size:13px;color:var(--mute)}
+.tx .a{text-align:right;font-weight:700}
+.tx .a.in{color:var(--green)}
+@media (max-width:760px){.tx{grid-template-columns:1fr 100px 30px}.tx .d,.tx .cat{display:none}}
+.empty{padding:36px 20px;text-align:center;color:var(--mute)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+/* ---------- tax planner ---------- */
+.tax{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media (max-width:960px){.tax{grid-template-columns:1fr}}
+.tax .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px;margin-bottom:16px}
+.tax h3{margin:0 0 14px;font-size:17px;letter-spacing:-.01em}
+.tax h4{margin:18px 0 8px;font-size:14px;color:var(--mute)}
+.regimes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.regime{border:2px solid var(--line);border-radius:var(--r-m);padding:16px}
+.regime.win{border-color:var(--teal);background:var(--teal-soft)}
+.regime .t{font-size:13px;font-weight:700;color:var(--mute);display:flex;justify-content:space-between;align-items:center}
+.regime .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px}
+.regime .sub{font-size:13px;color:var(--mute)}
+.verdict{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:var(--r-m);background:var(--gold-soft);margin-bottom:16px;color:var(--ink)}
+.verdict b{font-size:17px}
+.verdict .save{margin-left:auto;font-size:22px;font-weight:800;white-space:nowrap}
+.brk{width:100%;border-collapse:collapse;font-size:14px}
+.brk td{padding:6px 0;border-bottom:1px dashed var(--line)}
+.brk td:last-child{text-align:right;font-weight:600}
+.brk tr.tot td{border-bottom:0;font-weight:800;padding-top:10px}
+.slabs{width:100%;border-collapse:collapse;font-size:14px}
+.slabs th,.slabs td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line)}
+.slabs th{color:var(--mute);font-weight:700;font-size:13px}
+.slabs td:last-child,.slabs th:last-child{text-align:right}
+.note{font-size:13px;color:var(--mute);line-height:1.55}
+.tips li{margin-bottom:8px;font-size:14px}
+.gst{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gst div{border:1px solid var(--line);border-radius:10px;padding:12px}
+.gst b{display:block;font-size:22px;letter-spacing:-.02em}
+.gst span{font-size:12px;color:var(--mute)}
+@media (max-width:760px){.gst{grid-template-columns:1fr 1fr}.regimes{grid-template-columns:1fr}}
+
+/* ---------- insights ---------- */
+.ins{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:960px){.ins{grid-template-columns:1fr}}
+.ins .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px}
+.ins h3{margin:0 0 12px;font-size:17px}
+.ins svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--mute);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.rule{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.rule:last-child{border-bottom:0}
+.rule .bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:6px;position:relative}
+.rule .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.rule .bar em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.5}
+.rule small{color:var(--mute)}
+
+/* ---------- toast + footer ---------- */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+footer{max-width:1180px;margin:0 auto;padding:28px 20px 40px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);line-height:1.6}
+
+/* ---------- v2 additions ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--mute)}
+.chip[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.chip:hover{filter:brightness(1.05)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:7px 12px;font-weight:700;font-size:13px;color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--teal-soft);color:var(--teal)}
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);font-size:14px;margin-bottom:16px}
+.banner .pill{margin-left:auto}
+.banner.warn{background:var(--gold-soft);border-color:transparent}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0}
+.kpi div{background:var(--surface2);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font-size:20px;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--mute)}
+.inv-table{width:100%;border-collapse:collapse;font-size:14px}
+.inv-table th,.inv-table td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.inv-table th{font-size:12px;color:var(--mute)}
+.inv-table td:nth-child(2){white-space:nowrap;font-weight:700}
+.alloc{display:flex;height:16px;border-radius:99px;overflow:hidden;margin:8px 0}
+.alloc i{display:block;height:100%}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:16px}
+.tl div{position:relative;padding:4px 0 12px;font-size:14px}
+.tl div::before{content:"";position:absolute;left:-21px;top:10px;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.tl b{display:inline-block;min-width:64px}
+.card h3 .pill{margin-left:8px;vertical-align:middle}
+details.card summary{cursor:pointer;font-weight:800;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.card summary::after{content:"+";font-size:22px;color:var(--mute)}
+details.card[open] summary::after{content:"−"}
+details.card summary::-webkit-details-marker{display:none}
+details.card > :not(summary){margin-top:14px}
+.warnlist li{margin-bottom:6px;font-size:14px}
+.calc-out{background:var(--surface2);border-radius:10px;padding:12px 14px;margin-top:8px;font-size:14px}
+.calc-out b{font-size:20px;display:block;letter-spacing:-.02em}
+@media (max-width:760px){.tabs button{font-size:12px;padding:8px 6px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#top"><span class="brand-mark">₹</span>RupeeZero</a>
+    <nav>
+      <a href="#app" data-tab="budget">Budget</a>
+      <a href="#app" data-tab="tx">Transactions</a>
+      <a href="#app" data-tab="tax">Tax centre</a>
+      <a href="#app" data-tab="invest">Save &amp; invest</a>
+      <a href="#app" data-tab="rules">Rules</a>
+    </nav>
+    <span class="grow"></span>
+    <button class="icon-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch theme">◐</button>
+    <a class="btn" href="#app">Open my planner</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div>
+      <h1>Every rupee planned. Every regime compared. Whatever you earn.</h1>
+      <p>RupeeZero is a zero-based budgeting and tax planner for Indian households — salaried, business owners, doctors and lawyers on presumptive schemes, freelancers, landlords, investors and pensioners. It computes old and new regime side by side, tells you what to save and where, and its tax rules live in one file that is refreshed each Budget so the maths stays current.</p>
+      <div class="cta">
+        <a class="btn" href="#app" id="startBtn">Start with this month's budget</a>
+        <a class="btn ghost" href="#app" data-tab="tax">Work out my tax</a>
+      </div>
+      <small>Free. Your data stays in this browser — nothing is uploaded.</small>
+    </div>
+    <div class="ledger-demo" aria-hidden="true">
+      <div class="row"><span>Consulting receipts (44ADA)</span><span class="num">₹ 1,40,000</span></div>
+      <div class="row"><span>Rent from Pune flat</span><span class="num">₹ 18,000</span></div>
+      <div class="row"><span>Advance tax set-aside</span><span class="num">₹ 21,500</span></div>
+      <div class="row"><span>GST payable</span><span class="num">₹ 25,200</span></div>
+      <div class="row"><span>Home loan EMI</span><span class="num">₹ 34,000</span></div>
+      <div class="row"><span>SIP · index + gold</span><span class="num">₹ 30,000</span></div>
+      <div class="row"><span>Household &amp; family</span><span class="num">₹ 47,300</span></div>
+      <div class="zero"><span>Left to plan</span><em class="num">₹ 0 ✓</em></div>
+    </div>
+  </section>
+
+  <section class="pillars" aria-label="How it works">
+    <div class="pillar"><h3>Built for every kind of income</h3><p>Salary, pension, business (regular books or 44AD), profession and freelancing (44ADA), house property, capital gains, interest and dividends — mix as many as apply to you.</p></div>
+    <div class="pillar"><h3>Both regimes, fully worked</h3><p>Slabs, standard deduction, HRA, 80C/80D/NPS, home-loan interest, 87A rebate with marginal relief, special rates on capital gains, surcharge and cess — then a plain verdict and an advance-tax calendar.</p></div>
+    <div class="pillar"><h3>Rules that stay current</h3><p>Every number comes from <code>tax-rules.json</code>, keyed by financial year. When a Budget changes something, that one file is updated and every copy of the app picks it up on next load.</p></div>
+  </section>
+
+  <section class="app" id="app">
+    <div class="app-head">
+      <h2 id="monthTitle">Budget</h2>
+      <div class="month" id="monthNav">
+        <button id="prevM" aria-label="Previous month">‹</button>
+        <strong id="monthLabel">—</strong>
+        <button id="nextM" aria-label="Next month">›</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="budget">Budget</button>
+        <button role="tab" aria-selected="false" data-tab="tx">Transactions</button>
+        <button role="tab" aria-selected="false" data-tab="tax">Tax centre</button>
+        <button role="tab" aria-selected="false" data-tab="invest">Save &amp; invest</button>
+        <button role="tab" aria-selected="false" data-tab="rules">Rules</button>
+      </div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="panel" id="panel-budget" role="tabpanel">
+      <div class="ltp" id="ltp">
+        <div><div class="amt num" id="ltpAmt">₹ 0</div><div class="lbl" id="ltpLbl">Left to plan</div></div>
+        <div><div class="bar"><i id="ltpBar" style="width:0%"></i></div><div class="bar-lbl"><span id="ltpPlanned">Planned ₹ 0</span><span id="ltpIncome">Income ₹ 0</span></div></div>
+        <div class="stat">Spent so far<b class="num" id="ltpSpent">₹ 0</b></div>
+      </div>
+      <div class="grid2">
+        <div id="ledger"></div>
+        <aside class="side">
+          <div class="card">
+            <h3>Income this month</h3>
+            <div id="incomeList"></div>
+            <div class="inline-add" style="margin-top:10px">
+              <div class="field"><label for="incName">Source</label><input id="incName" placeholder="Salary, receipts, rent…"></div>
+              <div class="field" style="max-width:130px"><label for="incAmt">Amount</label><input id="incAmt" type="number" inputmode="numeric" placeholder="₹"></div>
+              <button class="btn sm" id="incAdd">Add</button>
+            </div>
+            <p class="hint">Use money that actually lands in your account. The tax centre can push a monthly tax set-aside here as a budget line.</p>
+          </div>
+          <div class="card">
+            <h3>This month</h3>
+            <div class="kv"><span>Planned</span><b class="num" id="sPlanned">₹ 0</b></div>
+            <div class="kv"><span>Spent</span><b class="num" id="sSpent">₹ 0</b></div>
+            <div class="kv"><span>Still available to spend</span><b class="num" id="sAvail">₹ 0</b></div>
+            <div class="kv"><span>Saving &amp; investing rate</span><b id="sRate">0%</b></div>
+            <div class="kv total"><span>Rolled in from last month</span><b class="num" id="sRoll">₹ 0</b></div>
+          </div>
+          <div class="card">
+            <h3>Manage</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm ghost" id="addGroup">New group</button>
+              <button class="btn sm ghost" id="copyPrev">Copy last month's plan</button>
+              <button class="btn sm ghost" id="exportBtn">Download backup</button>
+              <button class="btn sm danger" id="resetBtn">Reset this month</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="panel" id="panel-tx" role="tabpanel" hidden>
+      <form class="tx-form" id="txForm">
+        <div class="field"><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+        <div class="field wide"><label for="txDesc">What was it</label><input id="txDesc" placeholder="DMart, BESCOM bill, GST challan, auto to office…" required></div>
+        <div class="field"><label for="txAmt">Amount (₹)</label><input id="txAmt" type="number" inputmode="decimal" step="0.01" min="0" required></div>
+        <div class="field"><label for="txCat">Budget line</label><select id="txCat"></select></div>
+        <button class="btn" type="submit">Add expense</button>
+      </form>
+      <div class="tx-list" id="txList"></div>
+    </div>
+
+    <!-- TAX CENTRE -->
+    <div class="panel" id="panel-tax" role="tabpanel" hidden>
+      <div class="banner" id="rulesBanner"><span>Loading tax rules…</span></div>
+      <p class="hint" style="margin:0 0 8px">Pick every kind of income you have this year. Sections appear below; all figures are annual.</p>
+      <div class="chips" id="incomeChips">
+        <button class="chip" data-src="salary" aria-pressed="true">Salary</button>
+        <button class="chip" data-src="pension" aria-pressed="false">Pension</button>
+        <button class="chip" data-src="business" aria-pressed="false">Business / shop / trading</button>
+        <button class="chip" data-src="profession" aria-pressed="false">Profession / freelance / consulting</button>
+        <button class="chip" data-src="house" aria-pressed="false">House property (rent / home loan)</button>
+        <button class="chip" data-src="cg" aria-pressed="false">Capital gains</button>
+        <button class="chip" data-src="other" aria-pressed="false">Interest, dividends, other</button>
+      </div>
+      <div class="tax">
+        <div id="taxInputs">
+          <div class="card">
+            <h3>About you</h3>
+            <div class="row2">
+              <div class="field"><label for="tAge">Age</label><select id="tAge"><option value="0">Below 60</option><option value="60">60 to 79</option><option value="80">80 and above</option></select></div>
+              <div class="field"><label for="tFY">Financial year</label><select id="tFY"></select></div>
+            </div>
+          </div>
+
+          <div class="card" data-sec="salary">
+            <h3>Salary</h3>
+            <div class="row2">
+              <div class="field"><label for="tGross">Gross salary for the year (excluding employer PF/NPS)</label><input id="tGross" type="number" inputmode="numeric" placeholder="12,00,000"></div>
+              <div class="field"><label for="tBasicPct">Basic + DA as % of gross</label><input id="tBasicPct" type="number" value="40" min="10" max="100"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tHRA">HRA received</label><input id="tHRA" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tRent">Rent you pay</label><input id="tRent" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tMetro">City</label><select id="tMetro"><option value="metro">Metro (Mumbai, Delhi, Kolkata, Chennai)</option><option value="nonmetro">Non-metro</option></select></div>
+              <div class="field"><label for="tEmpNPS">Employer NPS contribution</label><input id="tEmpNPS" type="number" inputmode="numeric" placeholder="0"><span class="sub">Deductible in both regimes (14% of basic in new, 10% private / 14% govt in old).</span></div>
+            </div>
+            <div class="field"><label for="tGovt">Employer type</label><select id="tGovt"><option value="private">Private sector</option><option value="govt">Central / state government</option></select></div>
+          </div>
+
+          <div class="card" data-sec="pension" hidden>
+            <h3>Pension</h3>
+            <div class="row2">
+              <div class="field"><label for="tPension">Pension received in the year</label><input id="tPension" type="number" inputmode="numeric" placeholder="0"><span class="sub">Gets the same standard deduction as salary.</span></div>
+              <div class="field"><label for="tFamPension">Family pension (received as a dependant)</label><input id="tFamPension" type="number" inputmode="numeric" placeholder="0"><span class="sub">One-third is deductible, up to the yearly cap.</span></div>
+            </div>
+          </div>
+
+          <div class="card" data-sec="business" hidden>
+            <h3>Business, shop or trading</h3>
+            <div class="field"><label>How do you want to be taxed?</label><div class="seg" id="bizMode"><button aria-pressed="true" data-v="44AD">Presumptive (44AD)</button><button aria-pressed="false" data-v="regular">Regular books &amp; P&amp;L</button></div></div>
+            <div class="row2">
+              <div class="field"><label for="tTurnover">Turnover / gross receipts</label><input id="tTurnover" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tDigitalPct">Share received digitally (UPI, bank, card) %</label><input id="tDigitalPct" type="number" min="0" max="100" value="90"></div>
+            </div>
+            <div class="field" data-biz="regular" hidden><label for="tBizProfit">Net profit after all business expenses and depreciation</label><input id="tBizProfit" type="number" inputmode="numeric" placeholder="0"></div>
+            <ul class="warnlist" id="bizWarn"></ul>
+          </div>
+
+          <div class="card" data-sec="profession" hidden>
+            <h3>Profession, freelancing or consulting</h3>
+            <div class="field"><label>How do you want to be taxed?</label><div class="seg" id="profMode"><button aria-pressed="true" data-v="44ADA">Presumptive (44ADA — 50% of receipts)</button><button aria-pressed="false" data-v="regular">Actual profit</button></div></div>
+            <div class="row2">
+              <div class="field"><label for="tReceipts">Gross professional receipts</label><input id="tReceipts" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tProfDigital">Share received digitally %</label><input id="tProfDigital" type="number" min="0" max="100" value="95"></div>
+            </div>
+            <div class="field" data-prof="regular" hidden><label for="tProfProfit">Net profit after expenses (software, rent, staff, depreciation…)</label><input id="tProfProfit" type="number" inputmode="numeric" placeholder="0"></div>
+            <ul class="warnlist" id="profWarn"></ul>
+          </div>
+
+          <div class="card" data-sec="house" hidden>
+            <h3>House property</h3>
+            <div class="row2">
+              <div class="field"><label for="tRentRecv">Rent received (let-out property)</label><input id="tRentRecv" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tMuniTax">Municipal / property tax paid</label><input id="tMuniTax" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tLetInterest">Home-loan interest on the let-out property</label><input id="tLetInterest" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="t24b">Home-loan interest on the house you live in</label><input id="t24b" type="number" inputmode="numeric" placeholder="0"><span class="sub">Old regime only, capped by the rules file.</span></div>
+            </div>
+          </div>
+
+          <div class="card" data-sec="cg" hidden>
+            <h3>Capital gains</h3>
+            <div class="row2">
+              <div class="field"><label for="tEqSTCG">Listed shares / equity funds held ≤ 12 months (STCG)</label><input id="tEqSTCG" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tEqLTCG">Listed shares / equity funds held &gt; 12 months (LTCG)</label><input id="tEqLTCG" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tOthLTCG">Property, gold, unlisted shares held &gt; 24 months (LTCG)</label><input id="tOthLTCG" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tOthSTCG">Other short-term gains &amp; debt-fund gains (taxed at slab)</label><input id="tOthSTCG" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <p class="hint" id="cgNote"></p>
+          </div>
+
+          <div class="card" data-sec="other" hidden>
+            <h3>Interest, dividends and other income</h3>
+            <div class="row2">
+              <div class="field"><label for="tSavInt">Savings-account interest</label><input id="tSavInt" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tFDInt">FD / RD / bond interest</label><input id="tFDInt" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tDiv">Dividends</label><input id="tDiv" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tOtherInc">Anything else (gifts above ₹50,000, winnings, royalties…)</label><input id="tOtherInc" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Deductions you can claim <span class="pill">old regime</span></h3>
+            <div class="row2">
+              <div class="field"><label for="t80C">80C — EPF, PPF, ELSS, LIC, SSY, tuition, home-loan principal</label><input id="t80C" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tNPS">80CCD(1B) — your own NPS</label><input id="tNPS" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="t80Dself">80D — health premium for self &amp; family</label><input id="t80Dself" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="t80Dpar">80D — health premium for parents</label><input id="t80Dpar" type="number" inputmode="numeric" placeholder="0"><label style="margin-top:6px;font-weight:600"><input type="checkbox" id="tParSenior" style="width:auto;margin-right:6px">Parents are 60+</label></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="t80E">80E — education-loan interest (no cap)</label><input id="t80E" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="t80G">80G — donations (eligible amount)</label><input id="t80G" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="t80EEB">80EEB — electric-vehicle loan interest</label><input id="t80EEB" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tOtherDed">Other (80DD, 80U, 80GGC, LTA…)</label><input id="tOtherDed" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <label style="font-size:14px;font-weight:600"><input type="checkbox" id="t80GG" style="width:auto;margin-right:6px">I pay rent but get no HRA (claim 80GG)</label>
+          </div>
+        </div>
+
+        <div id="taxOutputs">
+          <div class="verdict" id="verdict"><span>Add some income to compare regimes.</span></div>
+          <div class="regimes">
+            <div class="regime" id="rNew"><div class="t">New regime <span class="pill">default</span></div><div class="big num" id="rNewTax">₹ 0</div><div class="sub" id="rNewSub"></div></div>
+            <div class="regime" id="rOld"><div class="t">Old regime <span class="pill" id="oldPill">opt in</span></div><div class="big num" id="rOldTax">₹ 0</div><div class="sub" id="rOldSub"></div></div>
+          </div>
+          <div class="kpi" id="taxKpi"></div>
+          <div class="card" style="margin-top:12px">
+            <h3>Computation</h3>
+            <table class="brk" id="brk"></table>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+              <button class="btn sm" id="pushTDS">Add monthly tax set-aside to budget</button>
+              <button class="btn sm ghost" id="pushSalary">Add monthly net income to budget</button>
+            </div>
+          </div>
+          <div class="card"><h3>When to pay</h3><div id="advTax"></div></div>
+          <div class="card"><h3>Compliance flags</h3><ul class="warnlist" id="flags"></ul></div>
+          <div class="card"><h3>What would move the needle</h3><ul class="tips" id="tips"></ul></div>
+          <p class="note">Estimates for resident individuals. Not tax advice — confirm on incometax.gov.in or with a chartered accountant before paying or filing.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAVE & INVEST -->
+    <div class="panel" id="panel-invest" role="tabpanel" hidden>
+      <div class="tax">
+        <div>
+          <div class="card">
+            <h3>Your plan, in order</h3>
+            <div id="planSteps" class="tl"></div>
+          </div>
+          <div class="card">
+            <h3>Tax-saving room left this year</h3>
+            <div id="dedRoom"></div>
+          </div>
+          <div class="card">
+            <h3>Suggested split for new money</h3>
+            <div class="row2">
+              <div class="field"><label for="invHorizon">Money needed in</label><select id="invHorizon"><option value="1">Under 3 years</option><option value="2">3 to 7 years</option><option value="3" selected>7 years or more</option></select></div>
+              <div class="field"><label for="invRisk">Comfort with market ups and downs</label><select id="invRisk"><option value="1">Low</option><option value="2" selected>Medium</option><option value="3">High</option></select></div>
+            </div>
+            <div class="alloc" id="allocBar"></div>
+            <div class="legend" id="allocLegend"></div>
+            <p class="hint">A simple rule of thumb, not personal advice. Equity share is trimmed for short horizons, low risk comfort and age.</p>
+          </div>
+          <div class="card">
+            <h3>SIP calculator</h3>
+            <div class="row2">
+              <div class="field"><label for="sipAmt">Monthly SIP (₹)</label><input id="sipAmt" type="number" value="10000"></div>
+              <div class="field"><label for="sipYears">Years</label><input id="sipYears" type="number" value="15"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="sipRet">Expected return % p.a.</label><input id="sipRet" type="number" value="12" step="0.5"></div>
+              <div class="field"><label for="sipStep">Step-up every year %</label><input id="sipStep" type="number" value="10"></div>
+            </div>
+            <div class="calc-out" id="sipOut"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h3>Where the money can go</h3>
+            <table class="inv-table" id="invTable"></table>
+            <p class="hint" id="ratesAsOf"></p>
+          </div>
+          <div class="card">
+            <h3>Capital-gains housekeeping</h3>
+            <ul class="tips" id="cgTips"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RULES -->
+    <div class="panel" id="panel-rules" role="tabpanel" hidden>
+      <div class="tax">
+        <div>
+          <div class="card">
+            <h3>How the rules stay current</h3>
+            <p class="note">Tax slabs and limits are not written into the app. They live in <code>tax-rules.json</code>, keyed by financial year. On every load the app fetches that file (and, if configured, a central copy on GitHub), keeps the newest version, and picks the ruleset for the current Indian financial year (1 April – 31 March). If a new year has started and its ruleset is not yet verified, the app says so and uses the latest verified one.</p>
+            <p class="note">No software can know a Budget's contents before they are announced, so "automatic" means: a maintainer edits one JSON file after the Budget speech (usually 1 February) and after the Finance Act passes; the repository's scheduled workflow opens a reminder issue on those dates; a validation script rejects malformed rules; every deployed copy updates itself on next open.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+              <button class="btn sm" id="checkRules">Check for updated rules now</button>
+              <button class="btn sm ghost" id="downloadRules">Download current rules file</button>
+            </div>
+          </div>
+          <div class="card"><h3>What changed in the selected year</h3><ul class="tips" id="changesList"></ul></div>
+          <div class="card"><h3>Sources used to verify</h3><ul class="tips" id="sourcesList"></ul></div>
+        </div>
+        <div>
+          <div class="card"><h3>Active ruleset</h3><table class="brk" id="rulesTable"></table></div>
+          <div class="card"><h3>GST quick reference</h3><div class="gst" id="gstGrid"></div><p class="note" id="gstNote"></p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>RupeeZero keeps everything in your browser's local storage — download a backup now and then. Tax and GST figures come from the rules file shown in the Rules tab; small-savings rates are indicative and revised quarterly by the government.</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+window.RUPEEZERO_BUNDLED_RULES = {"schema":1,"updated":"2026-09-30","maintainer_note":"Edit ONLY this file when the Union Budget or a CBDT notification changes a number. Add a new key under rulesets for the new financial year (e.g. 2027-28); copy the previous year and change what moved. Run scripts/validate-rules.js before committing.","default_fy":"2026-27","rulesets":{"2026-27":{"label":"FY 2026-27 (Tax Year 2026-27 under the Income-tax Act, 2025)","verified_on":"2026-09-30","status":"verified","sources":["Union Budget 2026-27 (1 Feb 2026) — no change to slabs, rebate, surcharge or cess","Finance Act 2025 slab structure carried forward","Income-tax Act 2025 in force from 1 Apr 2026 (renumbering only)","56th GST Council (GST 2.0) rates effective 22 Sep 2025"],"cess":0.04,"new_regime":{"slabs":[[400000,0],[800000,0.05],[1200000,0.1],[1600000,0.15],[2000000,0.2],[2400000,0.25],[null,0.3]],"standard_deduction":75000,"rebate_income_limit":1200000,"rebate_max":60000,"rebate_marginal_relief":true,"rebate_excludes_special_rate_income":true,"employer_nps_pct_of_basic":0.14,"surcharge":[[5000000,0.1],[10000000,0.15],[20000000,0.25]],"surcharge_cap_capital_gains":0.15,"family_pension_deduction":25000},"old_regime":{"slabs_below_60":[[250000,0],[500000,0.05],[1000000,0.2],[null,0.3]],"slabs_60_to_79":[[300000,0],[500000,0.05],[1000000,0.2],[null,0.3]],"slabs_80_plus":[[500000,0],[1000000,0.2],[null,0.3]],"standard_deduction":50000,"rebate_income_limit":500000,"rebate_max":12500,"employer_nps_pct_of_basic_private":0.1,"employer_nps_pct_of_basic_govt":0.14,"surcharge":[[5000000,0.1],[10000000,0.15],[20000000,0.25],[50000000,0.37]],"surcharge_cap_capital_gains":0.15,"family_pension_deduction":15000},"deductions_old_regime":{"80C":150000,"80CCD_1B":50000,"80D_self":25000,"80D_self_senior":50000,"80D_parents":25000,"80D_parents_senior":50000,"24b_self_occupied":200000,"80TTA":10000,"80TTB_senior":50000,"80GG_max":60000,"80EEB_ev_loan":150000,"hra_metro_pct":0.5,"hra_nonmetro_pct":0.4},"house_property":{"standard_deduction_pct":0.3,"loss_setoff_cap":200000},"capital_gains":{"equity_stcg_rate":0.2,"equity_ltcg_rate":0.125,"equity_ltcg_exemption":125000,"other_ltcg_rate":0.125,"equity_holding_months":12,"other_holding_months":24,"cost_inflation_index":384,"note":"Debt mutual funds bought on/after 1 Apr 2023 are taxed at slab rates regardless of holding period. Property bought before 23 Jul 2024: option of 20% with indexation."},"presumptive":{"44AD_turnover_limit":20000000,"44AD_turnover_limit_digital":30000000,"44AD_rate_cash":0.08,"44AD_rate_digital":0.06,"44ADA_receipts_limit":5000000,"44ADA_receipts_limit_digital":7500000,"44ADA_rate":0.5,"digital_threshold_pct":0.95,"lock_in_years":5,"new_act_section":"Section 58 of the Income-tax Act, 2025"},"tax_audit":{"business_turnover":10000000,"business_turnover_digital":100000000,"profession_receipts":5000000},"advance_tax":{"threshold":10000,"instalments":[["15 Jun",0.15],["15 Sep",0.45],["15 Dec",0.75],["15 Mar",1]],"presumptive_single_instalment":"15 Mar"},"gst":{"registration_threshold_goods":4000000,"registration_threshold_services":2000000,"registration_threshold_special_states_goods":2000000,"registration_threshold_special_states_services":1000000,"rate_slabs":[0,5,18,40],"special_rates":{"gold":3,"rough_diamonds":0.25},"composition":{"traders_manufacturers":1,"restaurants":5,"services":6},"composition_turnover_limit":15000000},"filing":{"itr_due_non_audit":"31 Jul 2027","itr_due_audit":"31 Oct 2027","belated_return_until":"31 Dec 2027","old_regime_opt_in_form_business":"Form 10-IEA (once; can switch back to new only once in a lifetime for business/profession income)","old_regime_opt_in_form_salaried":"Choose in the ITR each year; tell employer via Form 12BB for TDS"},"small_savings_rates":{"as_of":"Q2 FY 2026-27 (indicative — verify on nsiindia.gov.in)","PPF":7.1,"EPF":8.25,"SSY":8.2,"SCSS":8.2,"NSC":7.7,"KVP":7.5,"POMIS":7.4,"RD_5yr":6.7,"TD_5yr":7.5},"changes_this_year":["Income-tax Act 2025 replaces the 1961 Act: 80C → 123, 80CCD → 124, 80D → 126, 111A/112/112A → 196/197/198, 44AD/44ADA → 58. Limits unchanged.","Sovereign Gold Bonds bought in the secondary market from 1 Apr 2026 lose tax-free maturity.","Share buybacks taxed as capital gains in the shareholder's hands."]},"2025-26":{"label":"FY 2025-26 (AY 2026-27)","verified_on":"2026-09-30","status":"verified","sources":["Finance Act 2025 (Union Budget 1 Feb 2025)"],"cess":0.04,"new_regime":{"slabs":[[400000,0],[800000,0.05],[1200000,0.1],[1600000,0.15],[2000000,0.2],[2400000,0.25],[null,0.3]],"standard_deduction":75000,"rebate_income_limit":1200000,"rebate_max":60000,"rebate_marginal_relief":true,"rebate_excludes_special_rate_income":true,"employer_nps_pct_of_basic":0.14,"surcharge":[[5000000,0.1],[10000000,0.15],[20000000,0.25]],"surcharge_cap_capital_gains":0.15,"family_pension_deduction":25000},"old_regime":{"slabs_below_60":[[250000,0],[500000,0.05],[1000000,0.2],[null,0.3]],"slabs_60_to_79":[[300000,0],[500000,0.05],[1000000,0.2],[null,0.3]],"slabs_80_plus":[[500000,0],[1000000,0.2],[null,0.3]],"standard_deduction":50000,"rebate_income_limit":500000,"rebate_max":12500,"employer_nps_pct_of_basic_private":0.1,"employer_nps_pct_of_basic_govt":0.14,"surcharge":[[5000000,0.1],[10000000,0.15],[20000000,0.25],[50000000,0.37]],"surcharge_cap_capital_gains":0.15,"family_pension_deduction":15000},"deductions_old_regime":{"80C":150000,"80CCD_1B":50000,"80D_self":25000,"80D_self_senior":50000,"80D_parents":25000,"80D_parents_senior":50000,"24b_self_occupied":200000,"80TTA":10000,"80TTB_senior":50000,"80GG_max":60000,"80EEB_ev_loan":150000,"hra_metro_pct":0.5,"hra_nonmetro_pct":0.4},"house_property":{"standard_deduction_pct":0.3,"loss_setoff_cap":200000},"capital_gains":{"equity_stcg_rate":0.2,"equity_ltcg_rate":0.125,"equity_ltcg_exemption":125000,"other_ltcg_rate":0.125,"equity_holding_months":12,"other_holding_months":24,"cost_inflation_index":376,"note":""},"presumptive":{"44AD_turnover_limit":20000000,"44AD_turnover_limit_digital":30000000,"44AD_rate_cash":0.08,"44AD_rate_digital":0.06,"44ADA_receipts_limit":5000000,"44ADA_receipts_limit_digital":7500000,"44ADA_rate":0.5,"digital_threshold_pct":0.95,"lock_in_years":5,"new_act_section":"Sections 44AD / 44ADA of the Income-tax Act, 1961"},"tax_audit":{"business_turnover":10000000,"business_turnover_digital":100000000,"profession_receipts":5000000},"advance_tax":{"threshold":10000,"instalments":[["15 Jun",0.15],["15 Sep",0.45],["15 Dec",0.75],["15 Mar",1]],"presumptive_single_instalment":"15 Mar"},"gst":{"registration_threshold_goods":4000000,"registration_threshold_services":2000000,"registration_threshold_special_states_goods":2000000,"registration_threshold_special_states_services":1000000,"rate_slabs":[0,5,18,40],"special_rates":{"gold":3,"rough_diamonds":0.25},"composition":{"traders_manufacturers":1,"restaurants":5,"services":6},"composition_turnover_limit":15000000},"filing":{"itr_due_non_audit":"31 Jul 2026","itr_due_audit":"31 Oct 2026","belated_return_until":"31 Dec 2026","old_regime_opt_in_form_business":"Form 10-IEA","old_regime_opt_in_form_salaried":"Choose in the ITR each year"},"small_savings_rates":{"as_of":"FY 2025-26","PPF":7.1,"EPF":8.25,"SSY":8.2,"SCSS":8.2,"NSC":7.7,"KVP":7.5,"POMIS":7.4,"RD_5yr":6.7,"TD_5yr":7.5},"changes_this_year":["New-regime slabs widened to ₹4 lakh bands; 87A rebate raised to ₹60,000 making ₹12 lakh tax-free."]}}};
+</script>
+<script>
+(function(){
+'use strict';
+/* ---------------- helpers ---------------- */
+const fmt = n => '₹ ' + new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(Math.round(n||0));
+const fmtS = n => (n<0?'−':'') + fmt(Math.abs(n));
+const fmtL = n => { n=n||0; if(Math.abs(n)>=1e7) return '₹ '+(n/1e7).toFixed(2).replace(/\.?0+$/,'')+' Cr'; if(Math.abs(n)>=1e5) return '₹ '+(n/1e5).toFixed(2).replace(/\.?0+$/,'')+' L'; return fmt(n); };
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2,9);
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const toast = m => { const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2400); };
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = id => parseFloat($('#'+id).value)||0;
+
+/* ---------------- storage ---------------- */
+const KEY='rupeezero:v2';
+let state;
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ state=JSON.parse(r); if(state&&state.months) return; } }catch(e){} state={months:{},tax:{},sources:{salary:true},theme:null,rulesCache:null}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ toast('Could not save — browser storage unavailable'); } }
+load();
+if(!state.sources) state.sources={salary:true};
+if(!state.tax) state.tax={};
+
+/* ================= RULES LOADER ================= */
+let RULES=null, RULE_SOURCE='bundled';
+function currentFY(d=new Date()){ const y=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; return y+'-'+String((y+1)%100).padStart(2,'0'); }
+function pickRules(){ const fys=Object.keys(RULES.rulesets).sort(); let fy=state.tax.tFY&&RULES.rulesets[state.tax.tFY]?state.tax.tFY:currentFY(); let warn=null;
+  if(!RULES.rulesets[fy]){ warn=`Rules for FY ${fy} are not verified yet — using ${fys[fys.length-1]} until the Budget is processed.`; fy=fys[fys.length-1]; }
+  else if(RULES.rulesets[fy].status!=='verified') warn=`FY ${fy} ruleset is marked "${RULES.rulesets[fy].status}" — treat results as provisional.`;
+  return {fy,rs:RULES.rulesets[fy],warn}; }
+function validRules(r){ return r&&r.rulesets&&Object.values(r.rulesets).every(s=>s.new_regime&&s.old_regime&&s.cess!=null); }
+async function fetchRules(url){ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) throw new Error(res.status); const j=await res.json(); if(!validRules(j)) throw new Error('bad schema'); return j; }
+async function loadRules(interactive){
+  const bundled=window.RUPEEZERO_BUNDLED_RULES; let best=bundled, src='bundled';
+  if(state.rulesCache&&validRules(state.rulesCache)&&(!best||state.rulesCache.updated>best.updated)){ best=state.rulesCache; src='cached'; }
+  const urls=[document.querySelector('meta[name="rules-url"]')?.content, document.querySelector('meta[name="rules-remote-url"]')?.content].filter(Boolean);
+  let fetchedAny=false;
+  for(const u of urls){ try{ const j=await fetchRules(u); fetchedAny=true; if(!best||j.updated>=best.updated){ best=j; src=u.startsWith('http')?'central repository':'site'; } }catch(e){} }
+  if(!best){ $('#rulesBanner').innerHTML='<span>Could not load tax rules. Check that tax-rules.json sits next to index.html.</span>'; return; }
+  RULES=best; RULE_SOURCE=src; if(src!=='bundled'){ state.rulesCache=best; save(); }
+  if(interactive) toast(fetchedAny?`Rules up to date (${best.updated})`:'Could not reach the rules file — using the copy already loaded');
+  populateFY(); renderTax(); renderInvest(); renderRules();
+}
+function populateFY(){ const sel=$('#tFY'); const fys=Object.keys(RULES.rulesets).sort().reverse(); const {fy}=pickRules(); sel.innerHTML=fys.map(f=>`<option value="${f}" ${f===fy?'selected':''}>FY ${f}${RULES.rulesets[f].status!=='verified'?' (provisional)':''}</option>`).join(''); }
+
+/* ================= BUDGET (month model) ================= */
+const now=new Date(); let cur={y:now.getFullYear(), m:now.getMonth()};
+const mkey=(y,m)=>y+'-'+String(m+1).padStart(2,'0');
+const shiftMonth=(y,m,d)=>{ const dt=new Date(y,m+d,1); return {y:dt.getFullYear(),m:dt.getMonth()}; };
+const TEMPLATE=[
+  {name:'Housing', items:['Rent / society maintenance','Home loan EMI','Electricity & water','Piped gas / LPG']},
+  {name:'Food', items:['Groceries & kirana','Milk, fruit & vegetables','Eating out & delivery']},
+  {name:'Transport', items:['Fuel','Auto, cab & metro','Vehicle EMI & insurance']},
+  {name:'Bills & subscriptions', items:['Mobile & broadband','OTT & apps','Domestic help']},
+  {name:'Family & giving', items:['Money to parents','School / tuition fees','Donations']},
+  {name:'Insurance & health', items:['Health insurance premium','Term life premium','Medicines & doctor']},
+  {name:'Taxes & statutory', items:['Income tax / advance tax set-aside','GST payable','Professional tax']},
+  {name:'Work & business costs', items:['Software & tools','Office rent / co-working','Staff & contractors']},
+  {name:'Saving & investing', items:['SIP — mutual funds','PPF / NPS','Emergency fund','Gold / RD']},
+  {name:'Sinking funds', items:['Festivals & gifts','Travel & holidays','Big purchase'], fund:true},
+  {name:'Personal', items:['Clothing & grooming','Fun & hobbies','Miscellaneous']},
+];
+function newMonth(){ return { income:[], groups:TEMPLATE.map(g=>({id:uid(),name:g.name,items:g.items.map(n=>({id:uid(),name:n,planned:0,fund:!!g.fund}))})), tx:[] }; }
+function month(){ const k=mkey(cur.y,cur.m); if(!state.months[k]){ state.months[k]=newMonth(); save(); } return state.months[k]; }
+function prevMonthData(){ const p=shiftMonth(cur.y,cur.m,-1); return state.months[mkey(p.y,p.m)]||null; }
+function spentOf(md,itemId){ return md.tx.filter(t=>t.itemId===itemId).reduce((s,t)=>s+t.amount,0); }
+function rollIn(item){ if(!item.fund) return 0; let total=0,y=cur.y,m=cur.m; for(let i=0;i<24;i++){ const p=shiftMonth(y,m,-1); y=p.y; m=p.m; const md=state.months[mkey(y,m)]; if(!md) continue; for(const g of md.groups) for(const it of g.items) if(it.fund&&it.name===item.name) total+=it.planned-spentOf(md,it.id); } return total; }
+function calc(){ const md=month(); const income=md.income.reduce((s,i)=>s+i.amount,0); let planned=0,spent=0,saving=0,roll=0,essentials=0;
+  const groups=md.groups.map(g=>{ let gp=0,gs=0,gr=0; const items=g.items.map(it=>{ const sp=spentOf(md,it.id), r=rollIn(it); gp+=it.planned; gs+=sp; gr+=r; return {...it,spent:sp,roll:r,avail:it.planned+r-sp}; }); planned+=gp; spent+=gs; roll+=gr; if(/saving|invest/i.test(g.name)) saving+=gp; else if(/housing|food|transport|bills|insurance|health|family|tax/i.test(g.name)) essentials+=gp; return {...g,items,planned:gp,spent:gs,roll:gr}; });
+  return {md,income,planned,spent,saving,roll,essentials,left:income-planned,groups}; }
+
+function renderLTP(c){ const a=$('#ltpAmt'),l=$('#ltpLbl'),b=$('#ltpBar'); a.textContent=fmtS(c.left); a.className='amt num '+(c.left===0&&c.income>0?'zero':c.left<0?'over':'left');
+  l.textContent=c.income===0?'Add income to start planning':c.left===0?'Every rupee has a job ✓':c.left<0?'Over-planned — trim lines by this much':'Left to plan';
+  b.style.width=(c.income>0?clamp(c.planned/c.income*100,0,100):0)+'%'; b.className=c.left<0?'over':''; $('#ltpPlanned').textContent='Planned '+fmt(c.planned); $('#ltpIncome').textContent='Income '+fmt(c.income); $('#ltpSpent').textContent=fmt(c.spent); }
+function renderLedger(c){ const el=$('#ledger'); el.innerHTML=''; c.groups.forEach(g=>{ const w=document.createElement('section'); w.className='group'; w.dataset.g=g.id;
+  w.innerHTML=`<div class="group-head"><div class="name"><input value="${esc(g.name)}" data-act="gname" aria-label="Group name"></div><div class="col">Planned</div><div class="col c3">Spent</div><div class="col">Available</div><button class="x" data-act="gdel" aria-label="Delete group">×</button></div>
+  ${g.items.map(it=>{ const pct=it.planned+it.roll>0?clamp(it.spent/(it.planned+it.roll)*100,0,100):(it.spent>0?100:0); const over=it.avail<0;
+    return `<div class="item" data-i="${it.id}"><div class="nm"><input value="${esc(it.name)}" data-act="iname" aria-label="Line name"><div class="prog"><i class="${over?'over':''}" style="width:${pct}%"></i></div>${it.fund?`<div class="tag">Fund · rolls over${it.roll?` · ${fmtS(it.roll)} carried in`:''}</div>`:''}</div>
+    <input class="money num" type="number" inputmode="numeric" min="0" value="${it.planned||''}" placeholder="0" data-act="planned" aria-label="Planned"><div class="ro num c3 ${it.spent>it.planned+it.roll?'over':''}">${fmt(it.spent)}</div><div class="ro num ${over?'over':''}">${fmtS(it.avail)}</div><button class="x" data-act="idel" aria-label="Delete line">×</button></div>`; }).join('')}
+  <div class="add-line"><button data-act="iadd">+ Add line</button><button data-act="fadd">+ Add fund</button></div>
+  <div class="group-foot"><div>Total</div><div class="r num">${fmt(g.planned)}</div><div class="r num c3">${fmt(g.spent)}</div><div class="r num ${g.planned+g.roll-g.spent<0?'over':''}">${fmtS(g.planned+g.roll-g.spent)}</div><div></div></div>`; el.appendChild(w); }); }
+function renderIncome(c){ const el=$('#incomeList'); el.innerHTML=(c.md.income.length?c.md.income.map(i=>`<div class="kv" data-inc="${i.id}"><span>${esc(i.name)}</span><span style="display:flex;gap:6px;align-items:center"><b class="num">${fmt(i.amount)}</b><button class="x" data-act="incdel" aria-label="Remove" style="width:26px;height:26px;font-size:16px">×</button></span></div>`).join(''):'<div class="empty" style="padding:12px 0"><b>No income yet</b>Add what lands in your account each month.</div>')+`<div class="kv total"><span>Total</span><b class="num">${fmt(c.income)}</b></div>`; }
+function renderSummary(c){ $('#sPlanned').textContent=fmt(c.planned); $('#sSpent').textContent=fmt(c.spent); $('#sAvail').textContent=fmtS(c.planned+c.roll-c.spent); $('#sRate').textContent=c.income?Math.round(c.saving/c.income*100)+'%':'—'; $('#sRoll').textContent=fmt(c.roll); }
+function renderTxSelect(c){ const sel=$('#txCat'); const keep=sel.value; sel.innerHTML=c.groups.map(g=>`<optgroup label="${esc(g.name)}">${g.items.map(it=>`<option value="${it.id}">${esc(it.name)}</option>`).join('')}</optgroup>`).join(''); if(keep) sel.value=keep; }
+function renderTx(c){ const byId={}; c.groups.forEach(g=>g.items.forEach(it=>byId[it.id]=g.name+' › '+it.name)); const list=[...c.md.tx].sort((a,b)=>b.date.localeCompare(a.date));
+  $('#txList').innerHTML=list.length?list.map(t=>`<div class="tx" data-tx="${t.id}"><span class="d">${new Date(t.date+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span><span>${esc(t.desc)}</span><span class="cat">${esc(byId[t.itemId]||'Unassigned')}</span><span class="a num">${fmt(t.amount)}</span><button class="x" data-act="txdel" aria-label="Delete">×</button></div>`).join(''):`<div class="empty"><b>No expenses yet in ${MONTHS[cur.m]}</b>Add one above; it is deducted from that budget line instantly.</div>`; }
+function renderAll(){ $('#monthLabel').textContent=MONTHS[cur.m]+' '+cur.y; const c=calc(); renderLTP(c); renderLedger(c); renderIncome(c); renderSummary(c); renderTxSelect(c); renderTx(c); }
+
+$('#ledger').addEventListener('input',e=>{ const act=e.target.dataset.act; if(!act) return; const md=month(); const gEl=e.target.closest('.group'); const g=md.groups.find(x=>x.id===gEl.dataset.g); if(!g) return;
+  if(act==='gname'){ g.name=e.target.value; save(); return; } const iEl=e.target.closest('.item'); const it=iEl&&g.items.find(x=>x.id===iEl.dataset.i); if(!it) return;
+  if(act==='iname'){ it.name=e.target.value; save(); } if(act==='planned'){ it.planned=Math.max(0,parseFloat(e.target.value)||0); save(); const c=calc(); renderLTP(c); renderSummary(c); const gc=c.groups.find(x=>x.id===g.id), ic=gc.items.find(x=>x.id===it.id); const ro=iEl.querySelectorAll('.ro'); ro[1].textContent=fmtS(ic.avail); ro[1].classList.toggle('over',ic.avail<0); const f=gEl.querySelector('.group-foot').querySelectorAll('.r'); f[0].textContent=fmt(gc.planned); f[2].textContent=fmtS(gc.planned+gc.roll-gc.spent); } });
+$('#ledger').addEventListener('change',e=>{ if(e.target.dataset.act) renderAll(); });
+$('#ledger').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const act=b.dataset.act; const md=month(); const gEl=b.closest('.group'); const gi=md.groups.findIndex(x=>x.id===gEl.dataset.g); const g=md.groups[gi]; if(!g) return;
+  if(act==='gdel'){ if(g.items.some(i=>i.planned)&&!confirm(`Delete "${g.name}" and its lines?`)) return; md.groups.splice(gi,1); save(); renderAll(); }
+  if(act==='iadd'||act==='fadd'){ g.items.push({id:uid(),name:act==='fadd'?'New fund':'New line',planned:0,fund:act==='fadd'}); save(); renderAll(); const l=gEl.querySelector('.item:last-of-type input[data-act="iname"]'); if(l){l.focus();l.select();} }
+  if(act==='idel'){ const iEl=b.closest('.item'); const ii=g.items.findIndex(x=>x.id===iEl.dataset.i); if(ii>-1){ if(md.tx.some(t=>t.itemId===g.items[ii].id)&&!confirm('This line has expenses logged. Delete anyway?')) return; g.items.splice(ii,1); save(); renderAll(); } } });
+$('#addGroup').onclick=()=>{ month().groups.push({id:uid(),name:'New group',items:[{id:uid(),name:'New line',planned:0,fund:false}]}); save(); renderAll(); };
+$('#incAdd').onclick=()=>{ const n=$('#incName').value.trim(), a=num('incAmt'); if(!n||!(a>0)){ toast('Give the income a name and an amount'); return; } month().income.push({id:uid(),name:n,amount:a}); $('#incName').value=''; $('#incAmt').value=''; save(); renderAll(); };
+$('#incAmt').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#incAdd').click(); });
+$('#incomeList').addEventListener('click',e=>{ const b=e.target.closest('[data-act="incdel"]'); if(!b) return; const id=b.closest('[data-inc]').dataset.inc; const md=month(); md.income=md.income.filter(i=>i.id!==id); save(); renderAll(); });
+$('#copyPrev').onclick=()=>{ const p=prevMonthData(); if(!p){ toast('No plan found for last month'); return; } const md=month(); if(md.groups.some(g=>g.items.some(i=>i.planned))&&!confirm("Replace this month's plan with last month's? Logged expenses stay.")) return;
+  const map={}; md.groups.forEach(g=>g.items.forEach(i=>map[g.name+'|'+i.name]=i.id)); md.groups=p.groups.map(g=>({id:uid(),name:g.name,items:g.items.map(i=>({id:map[g.name+'|'+i.name]||uid(),name:i.name,planned:i.planned,fund:i.fund}))})); md.income=p.income.map(i=>({id:uid(),name:i.name,amount:i.amount})); save(); renderAll(); toast("Copied last month's plan"); };
+$('#resetBtn').onclick=()=>{ if(!confirm('Reset '+MONTHS[cur.m]+' to the template? Income and expenses this month will be removed.')) return; state.months[mkey(cur.y,cur.m)]=newMonth(); save(); renderAll(); };
+function download(name,text,type){ try{ const blob=new Blob([text],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast('Downloaded '+name); }catch(e){ toast('Download blocked in this viewer'); } }
+$('#exportBtn').onclick=()=>download('rupeezero-backup.json',JSON.stringify(state,null,2),'application/json');
+$('#prevM').onclick=()=>{ cur=shiftMonth(cur.y,cur.m,-1); renderAll(); }; $('#nextM').onclick=()=>{ cur=shiftMonth(cur.y,cur.m,1); renderAll(); };
+$('#txDate').value=now.toISOString().slice(0,10);
+$('#txForm').addEventListener('submit',e=>{ e.preventDefault(); const d=$('#txDate').value, desc=$('#txDesc').value.trim(), a=num('txAmt'), cat=$('#txCat').value; if(!d||!desc||!(a>0)) return; const dm=new Date(d+'T00:00'); if(dm.getFullYear()!==cur.y||dm.getMonth()!==cur.m) cur={y:dm.getFullYear(),m:dm.getMonth()}; month().tx.push({id:uid(),date:d,desc,amount:a,itemId:cat}); $('#txDesc').value=''; $('#txAmt').value=''; save(); renderAll(); toast('Expense added'); });
+$('#txList').addEventListener('click',e=>{ const b=e.target.closest('[data-act="txdel"]'); if(!b) return; const id=b.closest('[data-tx]').dataset.tx; const md=month(); md.tx=md.tx.filter(t=>t.id!==id); save(); renderAll(); });
+
+/* ---------------- tabs & theme ---------------- */
+function showTab(name){ $$('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name))); $$('.panel').forEach(p=>p.hidden=p.id!=='panel-'+name); $('#monthTitle').textContent={budget:'Budget',tx:'Transactions',tax:'Tax centre',invest:'Save & invest',rules:'Rules'}[name]; $('#monthNav').style.visibility=(name==='budget'||name==='tx')?'visible':'hidden'; if(name==='invest') renderInvest(); if(name==='rules') renderRules(); }
+$$('[data-tab]').forEach(el=>el.addEventListener('click',()=>showTab(el.dataset.tab)));
+function applyTheme(){ if(state.theme) document.documentElement.dataset.theme=state.theme; else delete document.documentElement.dataset.theme; }
+$('#themeBtn').onclick=()=>{ const dark=matchMedia('(prefers-color-scheme: dark)').matches; const t=state.theme||(dark?'dark':'light'); state.theme=t==='dark'?'light':'dark'; save(); applyTheme(); }; applyTheme();
+
+/* ================= TAX ENGINE (rules-driven) ================= */
+function slabTax(inc,slabs){ let t=0,prev=0; for(const [lim,r] of slabs){ const L=lim==null?Infinity:lim; if(inc>prev) t+=(Math.min(inc,L)-prev)*r; prev=L; if(inc<=L) break; } return t; }
+function exemptionOf(slabs){ return slabs[0][1]===0?slabs[0][0]:0; }
+function surRate(inc,bands){ let r=0; for(const [lim,rate] of bands) if(inc>lim) r=rate; return r; }
+
+/* Gather inputs */
+function readInputs(){ const S=state.sources; const v=num;
+  return { age:v('tAge'), src:S,
+    salary:{ gross:S.salary?v('tGross'):0, basicPct:v('tBasicPct')||40, hra:v('tHRA'), rent:v('tRent'), metro:$('#tMetro').value==='metro', empNPS:S.salary?v('tEmpNPS'):0, govt:$('#tGovt').value==='govt' },
+    pension:{ amt:S.pension?v('tPension'):0, family:S.pension?v('tFamPension'):0 },
+    biz:{ on:!!S.business, mode:state.tax.bizMode||'44AD', turnover:v('tTurnover'), digital:clamp(v('tDigitalPct'),0,100)/100, profit:v('tBizProfit') },
+    prof:{ on:!!S.profession, mode:state.tax.profMode||'44ADA', receipts:v('tReceipts'), digital:clamp(v('tProfDigital'),0,100)/100, profit:v('tProfProfit') },
+    house:{ on:!!S.house, rent:v('tRentRecv'), muni:v('tMuniTax'), letInt:v('tLetInterest'), selfInt:v('t24b') },
+    cg:{ on:!!S.cg, eqS:v('tEqSTCG'), eqL:v('tEqLTCG'), othL:v('tOthLTCG'), othS:v('tOthSTCG') },
+    other:{ on:!!S.other, sav:v('tSavInt'), fd:v('tFDInt'), div:v('tDiv'), misc:v('tOtherInc') },
+    ded:{ c80:v('t80C'), nps:v('tNPS'), dSelf:v('t80Dself'), dPar:v('t80Dpar'), parSenior:$('#tParSenior').checked, e80:v('t80E'), g80:v('t80G'), eeb:v('t80EEB'), other:v('tOtherDed'), gg:$('#t80GG').checked }
+  }; }
+
+function computeAll(p,rs){
+  const N=rs.new_regime, O=rs.old_regime, D=rs.deductions_old_regime, CG=rs.capital_gains, PR=rs.presumptive, HP=rs.house_property;
+  const basic=p.salary.gross*p.salary.basicPct/100;
+  const flags=[], notes=[];
+  // ---- business income
+  let bizIncome=0, bizLabel='';
+  if(p.biz.on){ const lim=p.biz.digital>=PR.digital_threshold_pct?PR["44AD_turnover_limit_digital"]:PR["44AD_turnover_limit"];
+    if(p.biz.mode==='44AD'){ if(p.biz.turnover>lim){ bizIncome=p.biz.profit; bizLabel='Business profit (turnover above 44AD limit — regular books required)'; flags.push(`Turnover ${fmtL(p.biz.turnover)} exceeds the 44AD limit of ${fmtL(lim)}; presumptive scheme not available. Books of account and possibly a tax audit are required.`); }
+      else { bizIncome=p.biz.turnover*(p.biz.digital*PR["44AD_rate_digital"]+(1-p.biz.digital)*PR["44AD_rate_cash"]); bizLabel=`Presumptive business income (${(PR["44AD_rate_digital"]*100)}% digital / ${(PR["44AD_rate_cash"]*100)}% cash of turnover)`; if(p.biz.digital<PR.digital_threshold_pct&&p.biz.turnover>PR["44AD_turnover_limit"]*0.8) flags.push(`Pushing digital receipts to ${PR.digital_threshold_pct*100}%+ raises your 44AD ceiling to ${fmtL(PR["44AD_turnover_limit_digital"])}.`); } }
+    else { bizIncome=p.biz.profit; bizLabel='Business profit per books'; if(p.biz.turnover<=lim) flags.push(`You qualify for 44AD; if your real margin is above ${PR["44AD_rate_cash"]*100}%, presumptive would cut tax and drop bookkeeping. Opting out later locks you out for ${PR.lock_in_years} years.`); }
+    const auditLim=p.biz.digital>=PR.digital_threshold_pct?rs.tax_audit.business_turnover_digital:rs.tax_audit.business_turnover; if(p.biz.mode==='regular'&&p.biz.turnover>auditLim) flags.push(`Turnover above ${fmtL(auditLim)} — tax audit under 44AB (Section 63 of the 2025 Act) is mandatory; ITR due ${rs.filing.itr_due_audit}.`);
+    const gstLim=rs.gst.registration_threshold_goods; if(p.biz.turnover>gstLim) flags.push(`Turnover above ${fmtL(gstLim)} — GST registration is compulsory for goods (${fmtL(rs.gst.registration_threshold_services)} for services). Composition scheme available up to ${fmtL(rs.gst.composition_turnover_limit)} at ${rs.gst.composition.traders_manufacturers}%.`); }
+  // ---- profession income
+  let profIncome=0, profLabel='';
+  if(p.prof.on){ const lim=p.prof.digital>=PR.digital_threshold_pct?PR["44ADA_receipts_limit_digital"]:PR["44ADA_receipts_limit"];
+    if(p.prof.mode==='44ADA'){ if(p.prof.receipts>lim){ profIncome=p.prof.profit; profLabel='Professional profit (receipts above 44ADA limit)'; flags.push(`Receipts ${fmtL(p.prof.receipts)} exceed the 44ADA limit of ${fmtL(lim)}; regular books and a tax audit above ${fmtL(rs.tax_audit.profession_receipts)} apply.`); }
+      else { profIncome=p.prof.receipts*PR["44ADA_rate"]; profLabel=`Presumptive professional income (${PR["44ADA_rate"]*100}% of receipts)`; if(p.prof.digital<PR.digital_threshold_pct&&p.prof.receipts>PR["44ADA_receipts_limit"]*0.8) flags.push(`Keep ≥${PR.digital_threshold_pct*100}% receipts digital and the 44ADA ceiling becomes ${fmtL(PR["44ADA_receipts_limit_digital"])}.`); } }
+    else { profIncome=p.prof.profit; profLabel='Professional profit per books'; if(p.prof.receipts<=lim&&p.prof.profit>p.prof.receipts*PR["44ADA_rate"]) flags.push(`Your actual margin is above ${PR["44ADA_rate"]*100}% — 44ADA would tax only ${fmtL(p.prof.receipts*PR["44ADA_rate"])}, saving tax and audit cost.`); }
+    if(p.prof.receipts>rs.gst.registration_threshold_services) flags.push(`Professional receipts above ${fmtL(rs.gst.registration_threshold_services)} — GST registration required (services). Most services attract 18%.`); }
+  // ---- house property (per regime)
+  function houseIncome(isNew){ if(!p.house.on) return {inc:0,loss:0,detail:''}; let inc=0; if(p.house.rent>0){ const nav=Math.max(0,p.house.rent-p.house.muni); inc=nav*(1-HP.standard_deduction_pct)-p.house.letInt; } if(!isNew) inc-=Math.min(p.house.selfInt,D["24b_self_occupied"]); const loss=inc<0?Math.max(inc,-HP.loss_setoff_cap):0; return {inc:inc>0?inc:loss,loss}; }
+  // ---- other income
+  const otherNormal=(p.other.on?p.other.sav+p.other.fd+p.other.div+p.other.misc:0);
+  const slabCG=p.cg.on?p.cg.othS:0;
+  // ---- special-rate income
+  const eqS=p.cg.on?p.cg.eqS:0, eqLraw=p.cg.on?p.cg.eqL:0, othL=p.cg.on?p.cg.othL:0;
+  const eqL=Math.max(0,eqLraw-CG.equity_ltcg_exemption);
+
+  function regime(isNew){
+    const R=isNew?N:O; const slabs=isNew?N.slabs:(p.age>=80?O.slabs_80_plus:p.age>=60?O.slabs_60_to_79:O.slabs_below_60);
+    const rows=[];
+    // salary + pension
+    const salPen=p.salary.gross+p.pension.amt; let std=salPen>0?Math.min(R.standard_deduction,salPen):0;
+    let hraEx=0; if(!isNew&&p.salary.hra>0&&p.salary.rent>0) hraEx=Math.max(0,Math.min(p.salary.hra,p.salary.rent-0.10*basic,basic*(p.salary.metro?D.hra_metro_pct:D.hra_nonmetro_pct)));
+    const empNpsCap=isNew?N.employer_nps_pct_of_basic:(p.salary.govt?O.employer_nps_pct_of_basic_govt:O.employer_nps_pct_of_basic_private); const empNps=Math.min(p.salary.empNPS,basic*empNpsCap);
+    const famPenDed=p.pension.family>0?Math.min(p.pension.family/3,R.family_pension_deduction):0;
+    if(p.salary.gross) rows.push(['Gross salary',p.salary.gross]); if(p.pension.amt) rows.push(['Pension',p.pension.amt]);
+    if(std) rows.push(['Standard deduction',-std]); if(hraEx) rows.push(['HRA exemption',-hraEx]); if(empNps) rows.push(['Employer NPS',-empNps]);
+    if(p.pension.family){ rows.push(['Family pension',p.pension.family]); rows.push(['Family pension deduction',-famPenDed]); }
+    if(bizIncome) rows.push([bizLabel,bizIncome]); if(profIncome) rows.push([profLabel,profIncome]);
+    const hp=houseIncome(isNew); if(p.house.on&&(p.house.rent||p.house.selfInt||p.house.letInt)) rows.push(['Income / (loss) from house property'+(hp.loss<hp.inc?' — loss capped':''),hp.inc]);
+    if(otherNormal) rows.push(['Interest, dividends & other',otherNormal]); if(slabCG) rows.push(['Short-term / debt gains at slab',slabCG]);
+    let gti=salPen-std-hraEx-empNps+p.pension.family-famPenDed+bizIncome+profIncome+hp.inc+otherNormal+slabCG;
+    // Chapter VI-A (old only)
+    let ded=0;
+    if(!isNew){ const d=p.ded; const c80=Math.min(d.c80,D["80C"]); const nps=Math.min(d.nps,D["80CCD_1B"]); const dSelf=Math.min(d.dSelf,p.age>=60?D["80D_self_senior"]:D["80D_self"]); const dPar=Math.min(d.dPar,d.parSenior?D["80D_parents_senior"]:D["80D_parents"]); const eeb=Math.min(d.eeb,D["80EEB_ev_loan"]);
+      const tta=p.other.on?Math.min(p.other.sav+(p.age>=60?p.other.fd:0),p.age>=60?D["80TTB_senior"]:D["80TTA"]):0;
+      let gg=0; if(d.gg&&!p.salary.hra&&p.salary.rent>0){ const adj=Math.max(0,gti-c80-nps-dSelf-dPar); gg=Math.max(0,Math.min(D["80GG_max"],p.salary.rent-0.10*adj,0.25*adj)); }
+      const list=[['80C',c80],['80CCD(1B) NPS',nps],['80D self & family',dSelf],['80D parents',dPar],['80E education loan',d.e80],['80G donations',d.g80],['80EEB EV loan',eeb],['80TTA/80TTB interest',tta],['80GG rent without HRA',gg],['Other deductions',d.other]];
+      list.forEach(([l,v])=>{ if(v){ rows.push([l,-v]); ded+=v; } }); ded=Math.min(ded,Math.max(0,gti)); }
+    let ti=Math.max(0,gti-ded); rows.push(['Taxable income (normal rates)',ti,'tot']);
+    // special income & unused basic exemption
+    const ex=exemptionOf(slabs); let unused=Math.max(0,ex-ti); let sEqS=eqS, sEqL=eqL, sOthL=othL;
+    if(unused>0){ const u1=Math.min(unused,sEqS); sEqS-=u1; unused-=u1; const u2=Math.min(unused,sOthL); sOthL-=u2; unused-=u2; const u3=Math.min(unused,sEqL); sEqL-=u3; }
+    const specialInc=sEqS+sEqL+sOthL;
+    let normalTax=slabTax(ti,slabs);
+    const taxEqS=sEqS*CG.equity_stcg_rate, taxEqL=sEqL*CG.equity_ltcg_rate, taxOthL=sOthL*CG.other_ltcg_rate;
+    rows.push(['Tax at slab rates',normalTax]);
+    if(eqS) rows.push([`Equity STCG @ ${CG.equity_stcg_rate*100}%`,taxEqS]); if(eqLraw) rows.push([`Equity LTCG @ ${CG.equity_ltcg_rate*100}% (after ${fmtL(CG.equity_ltcg_exemption)} exemption)`,taxEqL]); if(othL) rows.push([`Other LTCG @ ${CG.other_ltcg_rate*100}%`,taxOthL]);
+    // rebate 87A
+    let rebate=0; const totalIncome=ti+specialInc;
+    if(isNew){ if(ti<=N.rebate_income_limit) rebate=Math.min(normalTax,N.rebate_max); else if(N.rebate_marginal_relief){ const excess=ti-N.rebate_income_limit; if(normalTax>excess) rebate=normalTax-excess; } if(!N.rebate_excludes_special_rate_income) rebate=Math.min(rebate,normalTax+taxEqS+taxOthL); }
+    else { if(totalIncome<=O.rebate_income_limit) rebate=Math.min(normalTax+taxEqS+taxOthL,O.rebate_max); }
+    if(rebate) rows.push(['Rebate u/s 87A',-rebate]);
+    let tax=Math.max(0,normalTax+taxEqS+taxOthL-rebate)+taxEqL;
+    // surcharge with marginal relief and CG cap
+    const sr=surRate(totalIncome,R.surcharge); let sur=0;
+    if(sr>0){ const cgTax=taxEqS+taxEqL+taxOthL; sur=(tax-cgTax)*sr+cgTax*Math.min(sr,R.surcharge_cap_capital_gains);
+      // marginal relief: total (tax+sur) cannot exceed tax at threshold + excess income
+      for(const [th] of R.surcharge){ if(totalIncome>th){ const shrink=totalIncome-th; const taxAtTh=Math.max(0,slabTax(Math.max(0,ti-shrink),slabs))+cgTax; const srTh=surRate(th,R.surcharge); const cap=taxAtTh+taxAtTh*srTh+shrink; if(tax+sur>cap) sur=Math.max(0,cap-tax); } } rows.push([`Surcharge (${(sr*100).toFixed(0)}% band, marginal relief applied)`,sur]); }
+    const cess=(tax+sur)*rs.cess; rows.push([`Health & education cess ${rs.cess*100}%`,cess]);
+    const total=tax+sur+cess; rows.push(['Total tax',total,'tot']);
+    return {rows,ti,totalIncome,total,rebate,ded,hraEx,empNps,std,specialInc,normalTax};
+  }
+  const nw=regime(true), od=regime(false);
+  const grossIncome=p.salary.gross+p.pension.amt+p.pension.family+bizIncome+profIncome+Math.max(0,houseIncome(false).inc)+otherNormal+slabCG+eqS+eqLraw+othL;
+  return {nw,od,flags,basic,bizIncome,profIncome,grossIncome,eqLraw};
+}
+
+/* ---------------- tax UI ---------------- */
+const taxInputIds=['tAge','tGross','tBasicPct','tHRA','tRent','tMetro','tEmpNPS','tGovt','tPension','tFamPension','tTurnover','tDigitalPct','tBizProfit','tReceipts','tProfDigital','tProfProfit','tRentRecv','tMuniTax','tLetInterest','t24b','tEqSTCG','tEqLTCG','tOthLTCG','tOthSTCG','tSavInt','tFDInt','tDiv','tOtherInc','t80C','tNPS','t80Dself','t80Dpar','t80E','t80G','t80EEB','tOtherDed','tFY'];
+taxInputIds.forEach(id=>{ const el=$('#'+id); if(!el) return; if(state.tax[id]!=null) el.value=state.tax[id]; el.addEventListener('input',()=>{ state.tax[id]=el.value; save(); renderTax(); if(id==='tFY') renderRules(); }); });
+['tParSenior','t80GG'].forEach(id=>{ const el=$('#'+id); if(state.tax[id]) el.checked=true; el.addEventListener('change',()=>{ state.tax[id]=el.checked; save(); renderTax(); }); });
+$$('#incomeChips .chip').forEach(ch=>{ ch.setAttribute('aria-pressed',String(!!state.sources[ch.dataset.src])); ch.addEventListener('click',()=>{ state.sources[ch.dataset.src]=!state.sources[ch.dataset.src]; ch.setAttribute('aria-pressed',String(state.sources[ch.dataset.src])); save(); syncSections(); renderTax(); }); });
+function syncSections(){ $$('[data-sec]').forEach(c=>c.hidden=!state.sources[c.dataset.sec]); $$('[data-biz]').forEach(e=>e.hidden=(state.tax.bizMode||'44AD')!=='regular'); $$('[data-prof]').forEach(e=>e.hidden=(state.tax.profMode||'44ADA')!=='regular'); }
+function seg(id,key,def){ $$('#'+id+' button').forEach(b=>{ b.setAttribute('aria-pressed',String((state.tax[key]||def)===b.dataset.v)); b.onclick=()=>{ state.tax[key]=b.dataset.v; save(); seg(id,key,def); syncSections(); renderTax(); }; }); }
+seg('bizMode','bizMode','44AD'); seg('profMode','profMode','44ADA'); syncSections();
+
+let lastTax=null;
+function renderTax(){ if(!RULES) return; const {fy,rs,warn}=pickRules(); const p=readInputs(); const r=computeAll(p,rs); lastTax={p,r,rs,fy};
+  const b=$('#rulesBanner'); b.className='banner'+(warn?' warn':''); b.innerHTML=`<span>${warn?esc(warn):`Using <b>${esc(rs.label)}</b>`}</span><span class="pill ${rs.status==='verified'?'ok':'warn'}">${rs.status==='verified'?'verified '+rs.verified_on:rs.status} · ${RULE_SOURCE}</span>`;
+  const anyIncome=r.grossIncome>0; const newWins=r.nw.total<=r.od.total;
+  $('#rNewTax').textContent=fmt(r.nw.total); $('#rOldTax').textContent=fmt(r.od.total);
+  $('#rNewSub').textContent=`taxable ${fmt(r.nw.totalIncome)} · ${fmt(r.nw.total/12)}/month`; $('#rOldSub').textContent=`taxable ${fmt(r.od.totalIncome)} · ${fmt(r.od.total/12)}/month`;
+  $('#rNew').classList.toggle('win',anyIncome&&newWins); $('#rOld').classList.toggle('win',anyIncome&&!newWins);
+  $('#oldPill').textContent=(p.biz.on||p.prof.on)?'Form 10-IEA · one-time switch':'choose in ITR each year';
+  const v=$('#verdict'); if(!anyIncome) v.innerHTML='<span>Add some income to compare regimes.</span>'; else if(Math.abs(r.nw.total-r.od.total)<1) v.innerHTML='<span><b>Both regimes cost the same.</b> Stay with the new regime — no proofs, less paperwork.</span>';
+  else v.innerHTML=`<span><b>${newWins?'New regime':'Old regime'} keeps more of your money.</b><br><span style="color:var(--mute);font-size:14px">${newWins?'It is the default; nothing to file.':(p.biz.on||p.prof.on)?rs.filing.old_regime_opt_in_form_business:rs.filing.old_regime_opt_in_form_salaried}</span></span><span class="save num">saves ${fmt(Math.abs(r.nw.total-r.od.total))}/yr</span>`;
+  const best=Math.min(r.nw.total,r.od.total); const eff=r.grossIncome?best/r.grossIncome*100:0;
+  $('#taxKpi').innerHTML=`<div><b class="num">${fmtL(r.grossIncome)}</b><span>Total income before deductions</span></div><div><b class="num">${fmt(best/12)}</b><span>Set aside per month</span></div><div><b>${eff.toFixed(1)}%</b><span>Effective tax rate</span></div><div><b class="num">${fmtL(r.grossIncome-best)}</b><span>Yearly income after tax</span></div>`;
+  const rowsHtml=(title,rows)=>`<tr class="tot"><td colspan="2">${title}</td></tr>`+rows.map(([l,val,cls])=>`<tr class="${cls||''}"><td>${l}</td><td class="num">${fmtS(val)}</td></tr>`).join('');
+  $('#brk').innerHTML=rowsHtml('New regime',r.nw.rows)+rowsHtml('Old regime',r.od.rows);
+  // advance tax
+  const AT=rs.advance_tax; const presumptive=(p.biz.on&&p.biz.mode==='44AD')||(p.prof.on&&p.prof.mode==='44ADA'); const tdsLikely=p.salary.gross>0&&!p.biz.on&&!p.prof.on&&!p.house.rent&&!p.cg.on;
+  $('#advTax').innerHTML = best<AT.threshold ? `<p class="note">Estimated tax is below ${fmt(AT.threshold)}, so advance tax is not required. File the return by ${rs.filing.itr_due_non_audit}.</p>`
+    : tdsLikely ? `<p class="note">Your employer deducts TDS monthly (about ${fmt(best/12)}). Share the regime choice and proofs via Form 12BB early in the year to avoid a large cut in March. Return due ${rs.filing.itr_due_non_audit}.</p>`
+    : presumptive&&!p.salary.gross ? `<div class="tl"><div><b>${AT.presumptive_single_instalment}</b> Pay 100% — ${fmt(best)} — as a single instalment (presumptive scheme benefit)</div><div><b>${rs.filing.itr_due_non_audit}</b> File ITR-4 (Sugam)</div></div>`
+    : `<div class="tl">${AT.instalments.map(([d,pct],i)=>`<div><b>${d}</b> Cumulative ${(pct*100).toFixed(0)}% → ${fmt(best*pct)}${i>0?` (pay ${fmt(best*(pct-AT.instalments[i-1][1]))})`:''}</div>`).join('')}<div><b>${rs.filing.itr_due_non_audit}</b> File return (${rs.filing.itr_due_audit} if audited). Interest under 234B/234C applies to shortfalls.</div></div>`;
+  // flags
+  const fl=[...r.flags]; if(r.eqLraw>0&&p.cg.on) fl.push(`Equity LTCG up to ${fmtL(rs.capital_gains.equity_ltcg_exemption)} a year is exempt — the 87A rebate never applies to LTCG tax, in either regime.`);
+  if(p.house.rent>0&&p.house.rent>600000) fl.push('Rent received above ₹50,000 a month: the tenant must deduct TDS at 2% — reconcile it in your AIS before filing.'); if(p.other.on&&p.other.div>0) fl.push('Dividends are taxed at slab and companies deduct 10% TDS above ₹10,000 a year (check Form 26AS).');
+  if(p.salary.gross>0&&(p.biz.on||p.prof.on)) fl.push('Salary plus business/professional income: file ITR-3 (or ITR-4 if fully presumptive and no capital gains).'); if((p.biz.on||p.prof.on)&&!newWins) fl.push(`With business or professional income the old regime is chosen once via Form 10-IEA; you may return to the new regime only once in a lifetime — decide with a multi-year view.`);
+  $('#flags').innerHTML=fl.length?fl.map(f=>`<li>${f}</li>`).join(''):'<li>No compliance flags for the details entered.</li>';
+  // tips
+  const t=[]; const N=rs.new_regime, D=rs.deductions_old_regime;
+  if(anyIncome){ const salaryOnlyFree=N.rebate_income_limit+N.standard_deduction; if(p.salary.gross>0&&r.nw.ti<=N.rebate_income_limit) t.push(`Under the new regime your normal income is inside the ${fmtL(N.rebate_income_limit)} rebate zone (salary up to ${fmtL(salaryOnlyFree)} is tax-free). Only capital gains would add tax.`);
+    if(r.nw.ti>N.rebate_income_limit&&r.nw.ti<N.rebate_income_limit+N.rebate_max*1.2) t.push(`You are just above the ${fmtL(N.rebate_income_limit)} cliff; marginal relief caps your tax at the excess. Routing ${fmt(r.nw.ti-N.rebate_income_limit)} more into employer NPS (if salaried) would bring tax to zero.`);
+    if(p.salary.gross>0&&p.salary.empNPS<r.basic*N.employer_nps_pct_of_basic) t.push(`Employer NPS is the one big deduction that survives in the new regime — up to ${fmt(r.basic*N.employer_nps_pct_of_basic)} (${N.employer_nps_pct_of_basic*100}% of basic) can be restructured from CTC.`);
+    if(!newWins){ if(p.ded.c80<D["80C"]) t.push(`80C has ${fmt(D["80C"]-p.ded.c80)} of room — EPF/PPF/ELSS/SSY count.`); if(p.ded.nps<D["80CCD_1B"]) t.push(`80CCD(1B) allows another ${fmt(D["80CCD_1B"]-p.ded.nps)} in your own NPS.`); if(p.ded.dSelf===0) t.push('No health insurance premium entered — a family floater is both protection and an 80D deduction.'); }
+    else if(r.od.total>r.nw.total&&(r.od.ded<D["80C"]+D["80CCD_1B"])) t.push(`The old regime would need roughly ${fmt((r.od.total-r.nw.total)/0.312)} more in deductions than entered to catch up.`);
+    if(p.biz.on&&p.biz.mode==='44AD') t.push('Under 44AD you cannot claim business expenses, but personal deductions (80C, 80D, NPS) still apply if you choose the old regime.');
+    if(p.prof.on&&p.prof.mode==='44ADA'&&p.prof.receipts>0) t.push(`44ADA taxes only half your receipts; set aside ${fmt(best/12)} a month and pay it by ${rs.advance_tax.presumptive_single_instalment}.`);
+    if(p.house.on&&p.house.selfInt>0&&newWins) t.push('Self-occupied home-loan interest is only deductible in the old regime; if the loan is large, re-check after the first year of EMIs.'); }
+  else t.push('Tick your income types above and fill in the yearly figures. Everything recalculates as you type and is saved for next time.');
+  $('#tips').innerHTML=t.map(x=>`<li>${x}</li>`).join('');
+  $('#cgNote').textContent=rs.capital_gains.note||'';
+  renderInvest();
+}
+$('#pushTDS').onclick=()=>{ if(!lastTax||!lastTax.r.grossIncome){ toast('Enter income first'); return; } const t=Math.min(lastTax.r.nw.total,lastTax.r.od.total)/12; const md=month(); let g=md.groups.find(x=>/tax/i.test(x.name)); if(!g){ g={id:uid(),name:'Taxes & statutory',items:[]}; md.groups.unshift(g); } let it=g.items.find(i=>/income tax|tds|advance tax/i.test(i.name)); if(!it){ it={id:uid(),name:'Income tax / advance tax set-aside',planned:0,fund:false}; g.items.push(it); } it.planned=Math.round(t); save(); renderAll(); showTab('budget'); toast('Monthly tax set-aside added'); };
+$('#pushSalary').onclick=()=>{ if(!lastTax||!lastTax.r.grossIncome){ toast('Enter income first'); return; } const {p,r}=lastTax; const best=Math.min(r.nw.total,r.od.total); const epf=p.salary.gross?r.basic*0.12:0; const net=Math.round((r.grossIncome-best-epf)/12); const md=month(); let inc=md.income.find(i=>/net income|salary/i.test(i.name)); if(inc) inc.amount=net; else md.income.push({id:uid(),name:'Net income after tax',amount:net}); save(); renderAll(); showTab('budget'); toast('Monthly net income set to '+fmt(net)); };
+
+/* ================= SAVE & INVEST ================= */
+const INSTRUMENTS=[
+  {n:'EPF (employee share)',k:'EPF',r:'{EPF}% fixed',lock:'Till job change/retirement',risk:'Nil',tax:'80C; tax-free at maturity (interest on own contribution >₹2.5L taxable)',who:'Salaried'},
+  {n:'PPF',k:'PPF',r:'{PPF}% fixed',lock:'15 years (partial withdrawal after 7)',risk:'Nil',tax:'80C; fully exempt (EEE)',who:'Everyone, esp. self-employed'},
+  {n:'NPS Tier I',k:null,r:'Market-linked (~9–11% historic)',lock:'Till 60; 60% tax-free at exit',risk:'Low–medium',tax:'80CCD(1B) ₹50k extra; employer share deductible in both regimes',who:'Everyone'},
+  {n:'ELSS mutual fund',k:null,r:'Equity-linked (~12% long-run)',lock:'3 years',risk:'High',tax:'80C; LTCG 12.5% above ₹1.25L',who:'Long horizon, wants 80C + growth'},
+  {n:'Sukanya Samriddhi',k:'SSY',r:'{SSY}% fixed',lock:'Till daughter is 21',risk:'Nil',tax:'80C; EEE',who:'Parents of a girl under 10'},
+  {n:'Senior Citizens Savings Scheme',k:'SCSS',r:'{SCSS}% fixed, quarterly payout',lock:'5 years',risk:'Nil',tax:'80C; interest taxable (80TTB ₹50k)',who:'60+'},
+  {n:'NSC',k:'NSC',r:'{NSC}% fixed',lock:'5 years',risk:'Nil',tax:'80C; interest taxable but reinvested counts for 80C',who:'Conservative savers'},
+  {n:'Index / flexi-cap equity fund SIP',k:null,r:'~11–13% long-run',lock:'None',risk:'High',tax:'LTCG 12.5% above ₹1.25L; STCG 20%',who:'Goals 7+ years away'},
+  {n:'Debt fund / arbitrage fund',k:null,r:'~6–7%',lock:'None',risk:'Low',tax:'Debt at slab; arbitrage taxed as equity',who:'1–3 year goals, parking cash'},
+  {n:'Bank FD / RD',k:'TD_5yr',r:'~{TD_5yr}% (5-yr tax-saver counts for 80C)',lock:'Chosen tenure',risk:'Nil',tax:'Interest at slab; TDS above ₹50k (₹1L for seniors)',who:'Emergency fund, seniors'},
+  {n:'Gold (ETF / SGB secondary)',k:null,r:'Tracks gold price',lock:'None',risk:'Medium',tax:'LTCG 12.5% after 24 months',who:'5–10% diversifier'},
+  {n:'Term life + health insurance',k:null,r:'Protection, not return',lock:'—',risk:'—',tax:'Term premium 80C; health 80D',who:'Anyone with dependants — buy first'}
+];
+function renderInvest(){ if(!RULES) return; const {rs}=pickRules(); const sr=rs.small_savings_rates; const c=calc(); const p=lastTax?lastTax.p:null; const r=lastTax?lastTax.r:null;
+  const age=p?p.age:0; const D=rs.deductions_old_regime, N=rs.new_regime;
+  // plan steps
+  const monthlyEss=c.essentials||c.planned*0.6||0; const steps=[];
+  steps.push(['Protect','Term life cover of 10–15× annual income if anyone depends on you, plus a family health floater (₹10–25 lakh). Premiums are deductible under 80C/80D in the old regime.']);
+  steps.push(['Emergency fund',monthlyEss?`Six months of essentials ≈ <b class="num">${fmt(monthlyEss*6)}</b> (from your budget). Keep it in a sweep-in FD or liquid fund, not equity.`:'Six months of essential expenses in a sweep-in FD or liquid fund. Fill your budget and this number appears.']);
+  if(r&&r.grossIncome){ const best=Math.min(r.nw.total,r.od.total); steps.push(['Tax set-aside',`<b class="num">${fmt(best/12)}</b> a month — pay it as TDS/advance tax so March is not a shock.`]); }
+  steps.push(['Kill expensive debt','Credit-card and personal-loan balances (30–40% APR) beat any investment return. Home and education loans can wait — their interest is often deductible.']);
+  steps.push(['Fill tax-advantaged buckets','EPF/PPF/NPS first if you use the old regime; employer NPS if you use the new regime; then SSY for a daughter.']);
+  steps.push(['Invest for goals',`Monthly SIPs sized to each goal. Aim for a saving rate of 20%+; you are at <b>${c.income?Math.round(c.saving/c.income*100)+'%':'—'}</b> this month.`]);
+  $('#planSteps').innerHTML=steps.map(([h,b])=>`<div><b>${h}</b><br>${b}</div>`).join('');
+  // deduction room
+  if(p){ const rows=[['80C',D["80C"],p.ded.c80],['80CCD(1B) own NPS',D["80CCD_1B"],p.ded.nps],['80D self & family',age>=60?D["80D_self_senior"]:D["80D_self"],p.ded.dSelf],['80D parents',p.ded.parSenior?D["80D_parents_senior"]:D["80D_parents"],p.ded.dPar],['24(b) home-loan interest',D["24b_self_occupied"],p.house.selfInt]];
+    const emp=r?[['Employer NPS (new regime too)',r.basic*N.employer_nps_pct_of_basic,p.salary.empNPS]]:[]; const all=[...rows,...emp];
+    $('#dedRoom').innerHTML=all.map(([l,cap,used])=>{ const u=Math.min(used,cap); const pct=cap?u/cap*100:0; return `<div class="rule"><div><div style="display:flex;justify-content:space-between"><b>${l}</b><span class="num">${fmt(u)} of ${fmt(cap)}</span></div><div class="bar"><i style="width:${pct}%;background:${pct>=100?'var(--green)':'var(--teal)'}"></i></div><small>${cap-u>0?fmt(cap-u)+' still available':'fully used'}</small></div><span class="pill ${pct>=100?'ok':'warn'}">${pct>=100?'done':'room'}</span></div>`; }).join('')+`<p class="hint">${r&&r.nw.total<=r.od.total?'You are better off in the new regime, so 80C-type deductions do not lower your tax — invest for returns, not for the deduction. Employer NPS still helps.':'These deductions lower your old-regime tax at your marginal slab rate.'}</p>`; }
+  // allocation
+  const hz=parseInt($('#invHorizon').value), rk=parseInt($('#invRisk').value); let eq=hz===1?10:hz===2?40:70; eq+= (rk-2)*15; if(age>=60) eq-=20; else if(age>=45) eq-=10; eq=clamp(eq,5,85); const gold=hz===1?0:10; const debt=100-eq-gold;
+  $('#allocBar').innerHTML=`<i style="width:${eq}%;background:var(--teal)"></i><i style="width:${debt}%;background:var(--gold)"></i><i style="width:${gold}%;background:var(--rose)"></i>`;
+  $('#allocLegend').innerHTML=`<span><i style="background:var(--teal)"></i>Equity ${eq}% — index/flexi-cap SIP, ELSS, NPS-E</span><span><i style="background:var(--gold)"></i>Debt ${debt}% — PPF/EPF, NPS-C/G, debt funds, FD</span>${gold?`<span><i style="background:var(--rose)"></i>Gold ${gold}%</span>`:''}`;
+  // table
+  $('#invTable').innerHTML='<thead><tr><th>Instrument</th><th>Return</th><th>Lock-in</th><th>Risk</th><th>Tax</th><th>Best for</th></tr></thead><tbody>'+INSTRUMENTS.map(i=>`<tr><td>${i.n}</td><td>${i.r.replace(/\{(\w+)\}/g,(m,k)=>sr[k]??'—')}</td><td>${i.lock}</td><td>${i.risk}</td><td>${i.tax}</td><td>${i.who}</td></tr>`).join('')+'</tbody>';
+  $('#ratesAsOf').textContent='Small-savings rates: '+sr.as_of+'. Market returns are historical ranges, not promises.';
+  // sip
+  const A=num('sipAmt'),Y=num('sipYears'),R=num('sipRet')/100,S=num('sipStep')/100; let fv=0,inv=0,a=A; const mr=Math.pow(1+R,1/12)-1; for(let y=0;y<Y;y++){ for(let m=0;m<12;m++){ fv=(fv+a)*(1+mr); inv+=a; } a*=1+S; }
+  $('#sipOut').innerHTML=`<b class="num">${fmtL(fv)}</b>after ${Y} years · you invest ${fmtL(inv)} · growth ${fmtL(fv-inv)}<br><span style="color:var(--mute)">On equity, LTCG above ${fmtL(rs.capital_gains.equity_ltcg_exemption)} a year is taxed at ${rs.capital_gains.equity_ltcg_rate*100}% when redeemed — redeem across years to use the exemption.</span>`;
+  // cg tips
+  const CG=rs.capital_gains; $('#cgTips').innerHTML=[`Harvest up to ${fmtL(CG.equity_ltcg_exemption)} of equity LTCG every March and reinvest — that exemption does not carry over.`,`Hold listed equity beyond ${CG.equity_holding_months} months: ${CG.equity_stcg_rate*100}% short-term becomes ${CG.equity_ltcg_rate*100}% long-term.`,`Property, gold and unlisted shares turn long-term after ${CG.other_holding_months} months at ${CG.other_ltcg_rate*100}%. Property bought before 23 Jul 2024 may choose 20% with indexation (CII ${CG.cost_inflation_index} this year).`,`Book losses before 31 March to set off gains; carry-forward for 8 years needs the return filed on time.`,`Reinvest property gains in another house (Section 54) or specified bonds (54EC, ₹50 lakh cap) within the time limits to exempt them.`].map(x=>`<li>${x}</li>`).join('');
+}
+['invHorizon','invRisk','sipAmt','sipYears','sipRet','sipStep'].forEach(id=>$('#'+id).addEventListener('input',renderInvest));
+
+/* ================= RULES PANEL ================= */
+function renderRules(){ if(!RULES) return; const {fy,rs}=pickRules(); const N=rs.new_regime,O=rs.old_regime;
+  const slab=s=>s.map(([l,r],i,a)=>`${i===0?'Up to':'Up to'} ${l==null?'∞':fmtL(l)} → ${(r*100)}%`).join('; ');
+  const rows=[['Financial year',fy],['Status',rs.status+' · '+rs.verified_on],['Rules file updated',RULES.updated+' ('+RULE_SOURCE+')'],['New regime slabs',slab(N.slabs)],['Old regime slabs (<60)',slab(O.slabs_below_60)],['Standard deduction',`${fmt(N.standard_deduction)} new / ${fmt(O.standard_deduction)} old`],['87A rebate',`new: ${fmt(N.rebate_max)} up to ${fmtL(N.rebate_income_limit)}; old: ${fmt(O.rebate_max)} up to ${fmtL(O.rebate_income_limit)}`],['Cess',(rs.cess*100)+'%'],['Surcharge (new)',N.surcharge.map(([l,r])=>`>${fmtL(l)}: ${r*100}%`).join(', ')],['Equity STCG / LTCG',`${rs.capital_gains.equity_stcg_rate*100}% / ${rs.capital_gains.equity_ltcg_rate*100}% above ${fmtL(rs.capital_gains.equity_ltcg_exemption)}`],['44AD limit',`${fmtL(rs.presumptive["44AD_turnover_limit"])} (${fmtL(rs.presumptive["44AD_turnover_limit_digital"])} if ≥${rs.presumptive.digital_threshold_pct*100}% digital)`],['44ADA limit',`${fmtL(rs.presumptive["44ADA_receipts_limit"])} (${fmtL(rs.presumptive["44ADA_receipts_limit_digital"])} digital)`],['ITR due dates',`${rs.filing.itr_due_non_audit} / audited ${rs.filing.itr_due_audit}`]];
+  $('#rulesTable').innerHTML=rows.map(([l,v])=>`<tr><td>${l}</td><td style="text-align:right">${esc(v)}</td></tr>`).join('');
+  $('#changesList').innerHTML=(rs.changes_this_year||[]).map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No changes recorded.</li>';
+  $('#sourcesList').innerHTML=(rs.sources||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+  const G=rs.gst; const desc={0:'Fresh food, milk, health & life insurance, education',5:'Packaged food, soap, ghee, medicines, footwear ≤ ₹2,500',18:'Phones, appliances, restaurants, telecom, most services',40:'Aerated drinks, tobacco, large cars, betting'};
+  $('#gstGrid').innerHTML=G.rate_slabs.map(r=>`<div><b>${r}%</b><span>${desc[r]||''}</span></div>`).join('');
+  $('#gstNote').textContent=`Registration is compulsory above ${fmtL(G.registration_threshold_goods)} turnover for goods and ${fmtL(G.registration_threshold_services)} for services (${fmtL(G.registration_threshold_special_states_goods)} / ${fmtL(G.registration_threshold_special_states_services)} in special-category states). Gold ${G.special_rates.gold}%. Composition scheme up to ${fmtL(G.composition_turnover_limit)}: ${G.composition.traders_manufacturers}% traders, ${G.composition.restaurants}% restaurants, ${G.composition.services}% services.`; }
+$('#checkRules').onclick=()=>loadRules(true);
+$('#downloadRules').onclick=()=>{ if(RULES) download('tax-rules.json',JSON.stringify(RULES,null,2),'application/json'); };
+
+/* ---------------- boot ---------------- */
+renderAll(); loadRules(false);
+})();
+</script>
+</body>
+</html>
