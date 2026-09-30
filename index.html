@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RupeeZero — zero-based budgeting for Indian households</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F4F6F2; --surface:#FFFFFF; --surface2:#EDF1EC; --line:#D9E0DA;
+  --ink:#16211F; --mute:#62706C; --teal:#0E5C55; --teal-soft:#DDEDEA; --teal-ink:#FFFFFF;
+  --gold:#E8A317; --gold-soft:#FBEFD3; --rose:#B4432F; --rose-soft:#F8E1DC; --green:#2F7D4F; --green-soft:#DDF0E3;
+  --shadow:0 1px 2px rgba(22,33,31,.06), 0 8px 24px -12px rgba(22,33,31,.18);
+  --r-s:6px; --r-m:12px; --r-l:20px;
+  --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1614; --surface:#171F1C; --surface2:#1E2825; --line:#2B3733;
+    --ink:#E9EFEC; --mute:#98A6A1; --teal:#4FB8AC; --teal-soft:#153431; --teal-ink:#0F1614;
+    --gold:#F0B94A; --gold-soft:#3A2E13; --rose:#E0745F; --rose-soft:#3E211C; --green:#6CCB8E; --green-soft:#183A27;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1614; --surface:#171F1C; --surface2:#1E2825; --line:#2B3733;
+  --ink:#E9EFEC; --mute:#98A6A1; --teal:#4FB8AC; --teal-soft:#153431; --teal-ink:#0F1614;
+  --gold:#F0B94A; --gold-soft:#3A2E13; --rose:#E0745F; --rose-soft:#3E211C; --green:#6CCB8E; --green-soft:#183A27;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+a{color:var(--teal)}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none;color:var(--ink)}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-weight:800;font-size:18px}
+.top nav{display:flex;gap:6px;margin-left:8px}
+.top nav a{text-decoration:none;color:var(--mute);font-weight:600;padding:8px 12px;border-radius:var(--r-s)}
+.top nav a:hover{color:var(--ink);background:var(--surface2)}
+.top .grow{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:10px;padding:10px 16px;font-weight:700;background:var(--teal);color:var(--teal-ink);text-decoration:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--surface2);filter:none}
+.btn.gold{background:var(--gold);color:#1a1200}
+.btn.sm{padding:7px 12px;font-size:14px;border-radius:8px}
+.btn.danger{background:var(--rose-soft);color:var(--rose)}
+.icon-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;width:36px;height:36px;display:grid;place-items:center}
+.icon-btn:hover{background:var(--surface2)}
+@media (max-width:760px){.top nav{display:none}}
+
+/* ---------- hero ---------- */
+.hero{max-width:1180px;margin:0 auto;padding:64px 20px 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(38px,5.4vw,64px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin:0 0 20px;max-width:14ch}
+.hero p{font-size:18px;color:var(--mute);max-width:52ch;margin:0 0 28px}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero small{display:block;margin-top:16px;color:var(--mute);font-size:14px}
+.ledger-demo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow);padding:22px;transform:rotate(-1.2deg)}
+.ledger-demo .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line);font-weight:600}
+.ledger-demo .row span:last-child{color:var(--mute)}
+.ledger-demo .zero{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;font-weight:800;font-size:22px}
+.ledger-demo .zero em{font-style:normal;color:var(--teal)}
+@media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:40px}.ledger-demo{transform:none}}
+
+/* ---------- pillars ---------- */
+.pillars{max-width:1180px;margin:0 auto;padding:16px 20px 56px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pillar{padding:20px 22px;border-left:3px solid var(--teal)}
+.pillar h3{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+.pillar p{margin:0;color:var(--mute);font-size:15px}
+@media (max-width:760px){.pillars{grid-template-columns:1fr}}
+
+/* ---------- app shell ---------- */
+.app{max-width:1180px;margin:0 auto;padding:8px 20px 80px}
+.app-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.app-head h2{margin:0;font-size:26px;letter-spacing:-.02em}
+.month{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:3px}
+.month button{border:0;background:transparent;width:34px;height:32px;border-radius:7px}
+.month button:hover{background:var(--surface2)}
+.month strong{min-width:150px;text-align:center;font-weight:700}
+.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin-left:auto}
+.tabs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:700;color:var(--mute)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+@media (max-width:760px){.tabs{margin-left:0;width:100%;overflow-x:auto}.tabs button{flex:1;padding:8px 8px;font-size:14px}}
+.panel[hidden]{display:none}
+
+/* ---------- Left-to-plan strip (the memorable element) ---------- */
+.ltp{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;margin-bottom:22px;box-shadow:var(--shadow)}
+.ltp .amt{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1}
+.ltp .amt.zero{color:var(--teal)}
+.ltp .amt.over{color:var(--rose)}
+.ltp .amt.left{color:var(--gold)}
+.ltp .lbl{font-size:14px;color:var(--mute);margin-top:4px;font-weight:600}
+.ltp .bar{height:10px;background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+.ltp .bar i{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:99px;transition:width .35s ease}
+.ltp .bar i.over{background:var(--rose)}
+.ltp .bar-lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:6px}
+.ltp .stat{text-align:right;font-size:14px;color:var(--mute)}
+.ltp .stat b{display:block;color:var(--ink);font-size:18px}
+@media (max-width:760px){.ltp{grid-template-columns:1fr;gap:12px;position:static}.ltp .stat{text-align:left}}
+
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start}
+@media (max-width:960px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- ledger groups ---------- */
+.group{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);margin-bottom:16px;overflow:hidden}
+.group-head{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;align-items:center;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--line);font-size:13px;color:var(--mute);font-weight:700}
+.group-head .name{font-size:16px;color:var(--ink);font-weight:800;display:flex;align-items:center;gap:8px}
+.group-head .name input{border:0;background:transparent;font-weight:800;font-size:16px;padding:2px 4px;border-radius:4px;width:100%;min-width:0}
+.group-head .name input:focus{background:var(--surface)}
+.group-head .col{text-align:right}
+.item{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .nm{display:flex;flex-direction:column;min-width:0}
+.item .nm input{border:0;background:transparent;font-weight:600;padding:4px 6px;border-radius:4px;width:100%;min-width:0}
+.item .nm input:focus{background:var(--surface2)}
+.item .nm .prog{height:4px;background:var(--surface2);border-radius:99px;margin:4px 6px 0;overflow:hidden}
+.item .nm .prog i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.item .nm .prog i.over{background:var(--rose)}
+.item .nm .tag{font-size:11px;color:var(--mute);margin:3px 6px 0;font-weight:600}
+.money{width:100%;text-align:right;border:1px solid transparent;background:transparent;padding:6px 8px;border-radius:6px;font-weight:600}
+.money:hover{border-color:var(--line)}
+.money:focus{background:var(--surface2);border-color:var(--teal)}
+.ro{text-align:right;font-weight:600;padding:6px 8px}
+.ro.over{color:var(--rose)}
+.ro.mute{color:var(--mute)}
+.x{border:0;background:transparent;color:var(--mute);width:32px;height:32px;border-radius:6px;font-size:18px;line-height:1}
+.x:hover{background:var(--rose-soft);color:var(--rose)}
+.add-line{padding:8px 16px;display:flex;gap:8px}
+.add-line button{border:1px dashed var(--line);background:transparent;color:var(--teal);font-weight:700;padding:8px 12px;border-radius:8px;font-size:14px}
+.add-line button:hover{background:var(--teal-soft)}
+.group-foot{display:grid;grid-template-columns:1fr 120px 120px 120px 36px;gap:10px;padding:8px 16px;background:var(--surface2);border-top:1px solid var(--line);font-size:14px;font-weight:700}
+.group-foot .r{text-align:right}
+@media (max-width:760px){
+  .group-head,.item,.group-foot{grid-template-columns:1fr 90px 90px 28px}
+  .group-head .c3,.item .c3,.group-foot .c3{display:none}
+  .money,.ro{padding:6px 4px;font-size:14px}
+}
+
+/* ---------- side panel ---------- */
+.side .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;margin-bottom:14px}
+.side h3{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
+.side .kv{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+.side .kv span:first-child{color:var(--mute)}
+.side .kv b{font-weight:700}
+.side .kv.total{border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--surface2);color:var(--mute)}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.warn{background:var(--gold-soft);color:#7a5200}
+.pill.bad{background:var(--rose-soft);color:var(--rose)}
+.hint{font-size:13px;color:var(--mute);margin:8px 0 0}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:700;color:var(--mute)}
+.field input,.field select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;width:100%}
+.field input:focus,.field select:focus{border-color:var(--teal)}
+.field .sub{font-size:12px;color:var(--mute)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inline-add{display:flex;gap:8px;align-items:flex-end}
+.inline-add .field{flex:1;margin:0}
+
+/* ---------- transactions ---------- */
+.tx-form{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;display:grid;grid-template-columns:130px 1fr 150px 1fr auto;gap:12px;align-items:end;margin-bottom:18px}
+.tx-form .field{margin:0}
+@media (max-width:860px){.tx-form{grid-template-columns:1fr 1fr}.tx-form .field.wide,.tx-form .btn{grid-column:1/-1}}
+.tx-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.tx{display:grid;grid-template-columns:96px 1fr 180px 130px 36px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tx:last-child{border-bottom:0}
+.tx .d{color:var(--mute);font-size:14px}
+.tx .cat{font-size:13px;color:var(--mute)}
+.tx .a{text-align:right;font-weight:700}
+.tx .a.in{color:var(--green)}
+@media (max-width:760px){.tx{grid-template-columns:1fr 100px 30px}.tx .d,.tx .cat{display:none}}
+.empty{padding:36px 20px;text-align:center;color:var(--mute)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+/* ---------- tax planner ---------- */
+.tax{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media (max-width:960px){.tax{grid-template-columns:1fr}}
+.tax .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px;margin-bottom:16px}
+.tax h3{margin:0 0 14px;font-size:17px;letter-spacing:-.01em}
+.tax h4{margin:18px 0 8px;font-size:14px;color:var(--mute)}
+.regimes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.regime{border:2px solid var(--line);border-radius:var(--r-m);padding:16px}
+.regime.win{border-color:var(--teal);background:var(--teal-soft)}
+.regime .t{font-size:13px;font-weight:700;color:var(--mute);display:flex;justify-content:space-between;align-items:center}
+.regime .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px}
+.regime .sub{font-size:13px;color:var(--mute)}
+.verdict{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:var(--r-m);background:var(--gold-soft);margin-bottom:16px;color:var(--ink)}
+.verdict b{font-size:17px}
+.verdict .save{margin-left:auto;font-size:22px;font-weight:800;white-space:nowrap}
+.brk{width:100%;border-collapse:collapse;font-size:14px}
+.brk td{padding:6px 0;border-bottom:1px dashed var(--line)}
+.brk td:last-child{text-align:right;font-weight:600}
+.brk tr.tot td{border-bottom:0;font-weight:800;padding-top:10px}
+.slabs{width:100%;border-collapse:collapse;font-size:14px}
+.slabs th,.slabs td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line)}
+.slabs th{color:var(--mute);font-weight:700;font-size:13px}
+.slabs td:last-child,.slabs th:last-child{text-align:right}
+.note{font-size:13px;color:var(--mute);line-height:1.55}
+.tips li{margin-bottom:8px;font-size:14px}
+.gst{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gst div{border:1px solid var(--line);border-radius:10px;padding:12px}
+.gst b{display:block;font-size:22px;letter-spacing:-.02em}
+.gst span{font-size:12px;color:var(--mute)}
+@media (max-width:760px){.gst{grid-template-columns:1fr 1fr}.regimes{grid-template-columns:1fr}}
+
+/* ---------- insights ---------- */
+.ins{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:960px){.ins{grid-template-columns:1fr}}
+.ins .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px}
+.ins h3{margin:0 0 12px;font-size:17px}
+.ins svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--mute);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.rule{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.rule:last-child{border-bottom:0}
+.rule .bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:6px;position:relative}
+.rule .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.rule .bar em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.5}
+.rule small{color:var(--mute)}
+
+/* ---------- toast + footer ---------- */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+footer{max-width:1180px;margin:0 auto;padding:28px 20px 40px;color:var(--mute);font-size:13px;border-top:1px solid var(--line);line-height:1.6}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#top"><span class="brand-mark">₹</span>RupeeZero</a>
+    <nav>
+      <a href="#app" data-tab="budget">Budget</a>
+      <a href="#app" data-tab="tx">Transactions</a>
+      <a href="#app" data-tab="tax">Tax planner</a>
+      <a href="#app" data-tab="insights">Insights</a>
+    </nav>
+    <span class="grow"></span>
+    <button class="icon-btn" id="themeBtn" title="Switch light / dark" aria-label="Switch theme">◐</button>
+    <a class="btn" href="#app">Open my budget</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div>
+      <h1>Give every rupee a job before the month starts.</h1>
+      <p>RupeeZero is a zero-based budgeting app built for Indian households. Plan salary, EMIs, SIPs, festivals and family support until nothing is left unassigned — then check whether the old or new tax regime keeps more of your pay in FY 2026-27.</p>
+      <div class="cta">
+        <a class="btn" href="#app" id="startBtn">Start planning this month</a>
+        <a class="btn ghost" href="#app" data-tab="tax">Compare tax regimes</a>
+      </div>
+      <small>Free. Your data stays in this browser — nothing is uploaded.</small>
+    </div>
+    <div class="ledger-demo" aria-hidden="true">
+      <div class="row"><span>Salary (in hand)</span><span class="num">₹ 92,400</span></div>
+      <div class="row"><span>Rent &amp; maintenance</span><span class="num">₹ 28,000</span></div>
+      <div class="row"><span>Home loan EMI</span><span class="num">₹ 22,500</span></div>
+      <div class="row"><span>Groceries &amp; kirana</span><span class="num">₹ 12,000</span></div>
+      <div class="row"><span>SIP · Nifty index</span><span class="num">₹ 15,000</span></div>
+      <div class="row"><span>Parents</span><span class="num">₹ 8,000</span></div>
+      <div class="row"><span>Diwali fund</span><span class="num">₹ 4,000</span></div>
+      <div class="row"><span>Eating out &amp; Swiggy</span><span class="num">₹ 2,900</span></div>
+      <div class="zero"><span>Left to plan</span><em class="num">₹ 0 ✓</em></div>
+    </div>
+  </section>
+
+  <section class="pillars" aria-label="How it works">
+    <div class="pillar"><h3>Plan to zero</h3><p>Income minus every planned line must equal zero. Savings and SIPs are lines too — they are not what is left over.</p></div>
+    <div class="pillar"><h3>Sinking funds that roll over</h3><p>Mark Diwali, school fees, insurance premiums or a Goa trip as funds. Unspent money carries to next month instead of vanishing.</p></div>
+    <div class="pillar"><h3>Tax decided, not guessed</h3><p>Enter salary, rent, 80C, NPS and home-loan interest once. See old vs new regime side by side and push the monthly TDS straight into your budget.</p></div>
+  </section>
+
+  <section class="app" id="app">
+    <div class="app-head">
+      <h2 id="monthTitle">Budget</h2>
+      <div class="month">
+        <button id="prevM" aria-label="Previous month">‹</button>
+        <strong id="monthLabel">—</strong>
+        <button id="nextM" aria-label="Next month">›</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="budget">Budget</button>
+        <button role="tab" aria-selected="false" data-tab="tx">Transactions</button>
+        <button role="tab" aria-selected="false" data-tab="tax">Tax planner</button>
+        <button role="tab" aria-selected="false" data-tab="insights">Insights</button>
+      </div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="panel" id="panel-budget" role="tabpanel">
+      <div class="ltp" id="ltp">
+        <div><div class="amt num" id="ltpAmt">₹ 0</div><div class="lbl" id="ltpLbl">Left to plan</div></div>
+        <div><div class="bar"><i id="ltpBar" style="width:0%"></i></div><div class="bar-lbl"><span id="ltpPlanned">Planned ₹ 0</span><span id="ltpIncome">Income ₹ 0</span></div></div>
+        <div class="stat">Spent so far<b class="num" id="ltpSpent">₹ 0</b></div>
+      </div>
+
+      <div class="grid2">
+        <div id="ledger"></div>
+        <aside class="side">
+          <div class="card">
+            <h3>Income this month</h3>
+            <div id="incomeList"></div>
+            <div class="inline-add" style="margin-top:10px">
+              <div class="field"><label for="incName">Source</label><input id="incName" placeholder="Salary, freelance, rent…"></div>
+              <div class="field" style="max-width:130px"><label for="incAmt">Amount</label><input id="incAmt" type="number" inputmode="numeric" placeholder="₹"></div>
+              <button class="btn sm" id="incAdd">Add</button>
+            </div>
+            <p class="hint">Use in-hand pay. If you're on CTC, the tax planner works out TDS and can add it here as a line.</p>
+          </div>
+          <div class="card">
+            <h3>This month</h3>
+            <div class="kv"><span>Planned</span><b class="num" id="sPlanned">₹ 0</b></div>
+            <div class="kv"><span>Spent</span><b class="num" id="sSpent">₹ 0</b></div>
+            <div class="kv"><span>Still available to spend</span><b class="num" id="sAvail">₹ 0</b></div>
+            <div class="kv"><span>Saving &amp; investing rate</span><b id="sRate">0%</b></div>
+            <div class="kv total"><span>Rolled in from last month</span><b class="num" id="sRoll">₹ 0</b></div>
+            <p class="hint">Saving rate counts lines in your "Saving &amp; investing" group against total income. 20% or more is a healthy target for salaried households.</p>
+          </div>
+          <div class="card">
+            <h3>Manage</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm ghost" id="addGroup">New group</button>
+              <button class="btn sm ghost" id="copyPrev">Copy last month's plan</button>
+              <button class="btn sm ghost" id="exportBtn">Download backup (JSON)</button>
+              <button class="btn sm danger" id="resetBtn">Reset this month</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="panel" id="panel-tx" role="tabpanel" hidden>
+      <form class="tx-form" id="txForm">
+        <div class="field"><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+        <div class="field wide"><label for="txDesc">What was it</label><input id="txDesc" placeholder="Big Bazaar, BESCOM bill, auto to office…" required></div>
+        <div class="field"><label for="txAmt">Amount (₹)</label><input id="txAmt" type="number" inputmode="decimal" step="0.01" min="0" required></div>
+        <div class="field"><label for="txCat">Budget line</label><select id="txCat"></select></div>
+        <button class="btn" type="submit">Add expense</button>
+      </form>
+      <div class="tx-list" id="txList"></div>
+    </div>
+
+    <!-- TAX -->
+    <div class="panel" id="panel-tax" role="tabpanel" hidden>
+      <div class="tax">
+        <div>
+          <div class="card">
+            <h3>Your numbers for FY 2026-27</h3>
+            <div class="row2">
+              <div class="field"><label for="tGross">Gross annual salary (CTC minus employer PF/NPS)</label><input id="tGross" type="number" inputmode="numeric" placeholder="12,00,000"></div>
+              <div class="field"><label for="tBasicPct">Basic + DA as % of gross</label><input id="tBasicPct" type="number" value="40" min="10" max="100"><span class="sub">Most Indian pay structures keep basic at 40–50%.</span></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tAge">Age</label><select id="tAge"><option value="0">Below 60</option><option value="60">60 to 79</option><option value="80">80 and above</option></select></div>
+              <div class="field"><label for="tOther">Other income (interest, rent received, etc.)</label><input id="tOther" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <h4>House rent (old regime only)</h4>
+            <div class="row2">
+              <div class="field"><label for="tHRA">HRA received per year</label><input id="tHRA" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tRent">Rent paid per year</label><input id="tRent" type="number" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="field"><label for="tMetro">City</label><select id="tMetro"><option value="0.5">Metro (Mumbai, Delhi, Kolkata, Chennai) — 50% of basic</option><option value="0.4">Non-metro — 40% of basic</option></select></div>
+            <h4>Deductions (old regime only)</h4>
+            <div class="row2">
+              <div class="field"><label for="t80C">80C — EPF, PPF, ELSS, LIC, tuition, home-loan principal</label><input id="t80C" type="number" inputmode="numeric" placeholder="up to 1,50,000"></div>
+              <div class="field"><label for="t80D">80D — health insurance premiums</label><input id="t80D" type="number" inputmode="numeric" placeholder="up to 25,000 / 50,000 per family"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tNPS">80CCD(1B) — your own NPS</label><input id="tNPS" type="number" inputmode="numeric" placeholder="up to 50,000"></div>
+              <div class="field"><label for="t24b">24(b) — home-loan interest, self-occupied</label><input id="t24b" type="number" inputmode="numeric" placeholder="up to 2,00,000"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="tOtherDed">Other old-regime deductions (80E, 80G, 80TTA, LTA…)</label><input id="tOtherDed" type="number" inputmode="numeric" placeholder="0"></div>
+              <div class="field"><label for="tEmpNPS">Employer NPS contribution per year (both regimes)</label><input id="tEmpNPS" type="number" inputmode="numeric" placeholder="0"><span class="sub">Allowed up to 14% of basic+DA in new regime, 10% in old (private sector).</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Slabs used in this calculation</h3>
+            <h4>New regime (default) — same for all ages</h4>
+            <table class="slabs"><thead><tr><th>Taxable income</th><th>Rate</th></tr></thead><tbody>
+              <tr><td>Up to ₹4,00,000</td><td>Nil</td></tr><tr><td>₹4,00,001 – ₹8,00,000</td><td>5%</td></tr><tr><td>₹8,00,001 – ₹12,00,000</td><td>10%</td></tr><tr><td>₹12,00,001 – ₹16,00,000</td><td>15%</td></tr><tr><td>₹16,00,001 – ₹20,00,000</td><td>20%</td></tr><tr><td>₹20,00,001 – ₹24,00,000</td><td>25%</td></tr><tr><td>Above ₹24,00,000</td><td>30%</td></tr>
+            </tbody></table>
+            <p class="note">Standard deduction ₹75,000. Section 87A rebate up to ₹60,000 when taxable income is ≤ ₹12 lakh, with marginal relief just above it. Surcharge 10% above ₹50 lakh, 15% above ₹1 crore, 25% above ₹2 crore (capped at 25%). Health &amp; education cess 4%.</p>
+            <h4>Old regime</h4>
+            <table class="slabs"><thead><tr><th>Taxable income</th><th>Rate</th></tr></thead><tbody>
+              <tr><td>Up to ₹2,50,000 (₹3L if 60+, ₹5L if 80+)</td><td>Nil</td></tr><tr><td>Up to ₹5,00,000</td><td>5%</td></tr><tr><td>₹5,00,001 – ₹10,00,000</td><td>20%</td></tr><tr><td>Above ₹10,00,000</td><td>30%</td></tr>
+            </tbody></table>
+            <p class="note">Standard deduction ₹50,000. 87A rebate up to ₹12,500 when taxable income ≤ ₹5 lakh. Surcharge goes up to 37% above ₹5 crore. Budget 2026 left slabs, rebate, surcharge and cess unchanged from FY 2025-26; the Income Tax Act 2025 renumbers sections (80C → 123, 80D → 126, 80CCD → 124) from 1 April 2026 without changing limits.</p>
+          </div>
+        </div>
+        <div>
+          <div class="verdict" id="verdict"><span>Enter your gross salary to compare regimes.</span></div>
+          <div class="regimes">
+            <div class="regime" id="rNew"><div class="t">New regime <span class="pill">default</span></div><div class="big num" id="rNewTax">₹ 0</div><div class="sub" id="rNewSub">per year, incl. cess</div></div>
+            <div class="regime" id="rOld"><div class="t">Old regime <span class="pill">opt in via Form 10-IEA</span></div><div class="big num" id="rOldTax">₹ 0</div><div class="sub" id="rOldSub">per year, incl. cess</div></div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3>Breakdown</h3>
+            <table class="brk" id="brk"></table>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+              <button class="btn sm" id="pushTDS">Add monthly TDS to budget</button>
+              <button class="btn sm ghost" id="pushSalary">Add in-hand salary to income</button>
+            </div>
+            <p class="hint">TDS is the better regime's tax ÷ 12. In-hand = (gross − tax − 12% EPF on basic) ÷ 12. Professional tax and other payroll deductions vary by state and employer.</p>
+          </div>
+          <div class="card">
+            <h3>What would move the needle</h3>
+            <ul class="tips" id="tips"></ul>
+          </div>
+          <div class="card">
+            <h3>GST you pay while spending (from 22 Sept 2025)</h3>
+            <div class="gst">
+              <div><b>0%</b><span>Fresh food, milk, health &amp; life insurance, education</span></div>
+              <div><b>5%</b><span>Packaged food, soap, ghee, footwear ≤ ₹2,500, medicines</span></div>
+              <div><b>18%</b><span>Phones, appliances, restaurants, telecom, small cars</span></div>
+              <div><b>40%</b><span>Aerated drinks, tobacco, big cars, betting</span></div>
+            </div>
+            <p class="note" style="margin-top:10px">The 12% and 28% slabs were folded into 5% and 18%. Gold stays at 3%. Useful when you're pricing a big purchase line in the budget.</p>
+          </div>
+          <p class="note">This planner is an estimate for salaried resident individuals and is not tax advice. Confirm with the official calculator at incometax.gov.in or a chartered accountant before filing.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="panel" id="panel-insights" role="tabpanel" hidden>
+      <div class="ins">
+        <div class="card"><h3>Planned vs spent by group</h3><div id="chartGroups"></div><div class="legend"><span><i style="background:var(--teal)"></i>Planned</span><span><i style="background:var(--gold)"></i>Spent</span></div></div>
+        <div class="card"><h3>Where your income goes — 50 / 30 / 20 check</h3><div id="rule"></div><p class="hint">Needs (housing, food, bills, EMIs, insurance, family) ≲ 50%, wants ≲ 30%, saving &amp; investing ≳ 20%. Groups are matched by name; rename them to reclassify.</p></div>
+        <div class="card"><h3>Six-month view</h3><div id="chartTrend"></div><div class="legend"><span><i style="background:var(--teal)"></i>Income</span><span><i style="background:var(--gold)"></i>Spent</span></div></div>
+        <div class="card"><h3>Top spending lines this month</h3><div id="topLines"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>RupeeZero keeps everything in your browser's local storage — clear it and the budget is gone, so download a backup now and then. Tax figures reflect Budget 2026 (slabs unchanged from Budget 2025) and GST 2.0 rates effective 22 September 2025.</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------------- helpers ---------------- */
+const fmt = n => '₹ ' + new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(Math.round(n||0));
+const fmtS = n => (n<0?'−':'') + fmt(Math.abs(n));
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,9);
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const toast = m => { const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200); };
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------------- storage ---------------- */
+const KEY='rupeezero:v1';
+let state;
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ state=JSON.parse(r); if(state && state.months) return; } }catch(e){} state={months:{},tax:{},theme:null}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ toast('Could not save — browser storage is unavailable'); } }
+load();
+
+/* ---------------- month model ---------------- */
+const now=new Date(); let cur={y:now.getFullYear(), m:now.getMonth()};
+const mkey=(y,m)=>y+'-'+String(m+1).padStart(2,'0');
+const shiftMonth=(y,m,d)=>{ const dt=new Date(y,m+d,1); return {y:dt.getFullYear(),m:dt.getMonth()}; };
+
+const TEMPLATE=[
+  {name:'Housing', items:['Rent / society maintenance','Home loan EMI','Electricity & water','Piped gas / LPG cylinder']},
+  {name:'Food', items:['Groceries & kirana','Milk, fruit & vegetables','Eating out & food delivery']},
+  {name:'Transport', items:['Fuel','Auto, cab & metro','Vehicle EMI & insurance']},
+  {name:'Bills & subscriptions', items:['Mobile & broadband','OTT & apps','Domestic help / cook']},
+  {name:'Family & giving', items:['Money to parents','School / tuition fees','Donations & temple']},
+  {name:'Insurance & health', items:['Health insurance premium','Term life premium','Medicines & doctor']},
+  {name:'Saving & investing', items:['SIP — mutual funds','PPF / NPS','Emergency fund','Gold / RD']},
+  {name:'Sinking funds', items:['Festivals & gifts','Travel & holidays','Wedding / big purchase'], fund:true},
+  {name:'Personal', items:['Clothing & grooming','Fun & hobbies','Miscellaneous']},
+];
+function newMonth(){ return { income:[], groups:TEMPLATE.map(g=>({id:uid(),name:g.name,items:g.items.map(n=>({id:uid(),name:n,planned:0,fund:!!g.fund}))})), tx:[] }; }
+function month(){ const k=mkey(cur.y,cur.m); if(!state.months[k]) { state.months[k]=newMonth(); save(); } return state.months[k]; }
+function prevMonthData(){ const p=shiftMonth(cur.y,cur.m,-1); return state.months[mkey(p.y,p.m)]||null; }
+
+/* Rollover: for fund items, unspent (planned - spent) from prior months with the same item name carries in. */
+function rollIn(item){
+  if(!item.fund) return 0;
+  let total=0, y=cur.y, m=cur.m;
+  for(let i=0;i<24;i++){ const p=shiftMonth(y,m,-1); y=p.y; m=p.m; const md=state.months[mkey(y,m)]; if(!md) continue;
+    for(const g of md.groups) for(const it of g.items) if(it.fund && it.name===item.name){ total += it.planned - spentOf(md,it.id); }
+  }
+  return total;
+}
+function spentOf(md,itemId){ return md.tx.filter(t=>t.itemId===itemId).reduce((s,t)=>s+t.amount,0); }
+
+/* ---------------- computed ---------------- */
+function calc(){
+  const md=month();
+  const income=md.income.reduce((s,i)=>s+i.amount,0);
+  let planned=0, spent=0, saving=0, roll=0;
+  const groups=md.groups.map(g=>{
+    let gp=0,gs=0,gr=0;
+    const items=g.items.map(it=>{ const sp=spentOf(md,it.id); const r=rollIn(it); gp+=it.planned; gs+=sp; gr+=r; return {...it,spent:sp,roll:r,avail:it.planned+r-sp}; });
+    planned+=gp; spent+=gs; roll+=gr;
+    if(/saving|invest/i.test(g.name)) saving+=gp;
+    return {...g,items,planned:gp,spent:gs,roll:gr};
+  });
+  return {md,income,planned,spent,saving,roll,left:income-planned,groups};
+}
+
+/* ---------------- render: budget ---------------- */
+function renderMonthLabel(){ $('#monthLabel').textContent=MONTHS[cur.m]+' '+cur.y; $('#monthTitle').textContent='Budget'; }
+function renderLTP(c){
+  const a=$('#ltpAmt'), l=$('#ltpLbl'), b=$('#ltpBar');
+  a.textContent=fmtS(c.left); a.className='amt num '+(c.left===0&&c.income>0?'zero':c.left<0?'over':'left');
+  l.textContent = c.income===0 ? 'Add income to start planning' : c.left===0 ? 'Every rupee has a job ✓' : c.left<0 ? 'Over-planned — trim lines by this much' : 'Left to plan';
+  const pct = c.income>0 ? clamp(c.planned/c.income*100,0,100) : 0;
+  b.style.width=pct+'%'; b.className = c.left<0?'over':'';
+  $('#ltpPlanned').textContent='Planned '+fmt(c.planned); $('#ltpIncome').textContent='Income '+fmt(c.income);
+  $('#ltpSpent').textContent=fmt(c.spent);
+}
+function renderLedger(c){
+  const el=$('#ledger'); el.innerHTML='';
+  if(!c.groups.length){ el.innerHTML='<div class="group"><div class="empty"><b>No groups yet</b>Add a group from the panel to begin.</div></div>'; return; }
+  c.groups.forEach(g=>{
+    const wrap=document.createElement('section'); wrap.className='group'; wrap.dataset.g=g.id;
+    wrap.innerHTML=`
+      <div class="group-head">
+        <div class="name"><input value="${esc(g.name)}" data-act="gname" aria-label="Group name"></div>
+        <div class="col">Planned</div><div class="col c3">Spent</div><div class="col">Available</div>
+        <button class="x" data-act="gdel" title="Delete group" aria-label="Delete group">×</button>
+      </div>
+      ${g.items.map(it=>{
+        const pct = it.planned+it.roll>0 ? clamp(it.spent/(it.planned+it.roll)*100,0,100) : (it.spent>0?100:0);
+        const over = it.avail<0;
+        return `<div class="item" data-i="${it.id}">
+          <div class="nm"><input value="${esc(it.name)}" data-act="iname" aria-label="Line name">
+            <div class="prog"><i class="${over?'over':''}" style="width:${pct}%"></i></div>
+            ${it.fund?`<div class="tag">Fund · rolls over${it.roll?` · ${fmtS(it.roll)} carried in`:''}</div>`:''}
+          </div>
+          <input class="money num" type="number" inputmode="numeric" min="0" value="${it.planned||''}" placeholder="0" data-act="planned" aria-label="Planned amount">
+          <div class="ro num c3 ${it.spent>it.planned+it.roll?'over':''}">${fmt(it.spent)}</div>
+          <div class="ro num ${over?'over':''}">${fmtS(it.avail)}</div>
+          <button class="x" data-act="idel" title="Delete line" aria-label="Delete line">×</button>
+        </div>`; }).join('')}
+      <div class="add-line"><button data-act="iadd">+ Add line</button><button data-act="fadd" title="A fund keeps its unspent balance next month">+ Add fund</button></div>
+      <div class="group-foot"><div>Total</div><div class="r num">${fmt(g.planned)}</div><div class="r num c3">${fmt(g.spent)}</div><div class="r num ${g.planned+g.roll-g.spent<0?'over':''}">${fmtS(g.planned+g.roll-g.spent)}</div><div></div></div>`;
+    el.appendChild(wrap);
+  });
+}
+function renderIncome(c){
+  const el=$('#incomeList');
+  el.innerHTML = c.md.income.length ? c.md.income.map(i=>`<div class="kv" data-inc="${i.id}"><span>${esc(i.name)}</span><span style="display:flex;gap:6px;align-items:center"><b class="num">${fmt(i.amount)}</b><button class="x" data-act="incdel" aria-label="Remove income" style="width:26px;height:26px;font-size:16px">×</button></span></div>`).join('') : '<div class="empty" style="padding:12px 0"><b>No income yet</b>Add your take-home salary below.</div>';
+  el.innerHTML += `<div class="kv total"><span>Total</span><b class="num">${fmt(c.income)}</b></div>`;
+}
+function renderSummary(c){
+  $('#sPlanned').textContent=fmt(c.planned); $('#sSpent').textContent=fmt(c.spent);
+  $('#sAvail').textContent=fmtS(c.planned+c.roll-c.spent);
+  $('#sRate').textContent = c.income? Math.round(c.saving/c.income*100)+'%' : '—';
+  $('#sRoll').textContent=fmt(c.roll);
+}
+function renderTxSelect(c){
+  const sel=$('#txCat'); const keep=sel.value;
+  sel.innerHTML = c.groups.map(g=>`<optgroup label="${esc(g.name)}">${g.items.map(it=>`<option value="${it.id}">${esc(it.name)}</option>`).join('')}</optgroup>`).join('');
+  if(keep) sel.value=keep;
+}
+function renderTx(c){
+  const el=$('#txList'); const md=c.md;
+  const byId={}; c.groups.forEach(g=>g.items.forEach(it=>byId[it.id]={item:it.name,group:g.name}));
+  const list=[...md.tx].sort((a,b)=>b.date.localeCompare(a.date));
+  el.innerHTML = list.length ? list.map(t=>`<div class="tx" data-tx="${t.id}"><span class="d">${new Date(t.date+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span><span>${esc(t.desc)}</span><span class="cat">${byId[t.itemId]?esc(byId[t.itemId].group+' › '+byId[t.itemId].item):'Unassigned'}</span><span class="a num">${fmt(t.amount)}</span><button class="x" data-act="txdel" aria-label="Delete">×</button></div>`).join('')
+    : '<div class="empty"><b>No expenses yet in '+MONTHS[cur.m]+'</b>Add one above and it is deducted from that budget line instantly.</div>';
+}
+
+/* ---------------- render: insights ---------------- */
+function renderInsights(c){
+  const W=520, rowH=28, top=6;
+  const gs=c.groups.filter(g=>g.planned||g.spent);
+  const max=Math.max(1,...gs.map(g=>Math.max(g.planned,g.spent)));
+  const H=top+gs.length*rowH+4;
+  $('#chartGroups').innerHTML = gs.length ? `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Planned versus spent by group">${gs.map((g,i)=>{ const y=top+i*rowH; const lw=170, bw=W-lw-10;
+    return `<text x="0" y="${y+17}" font-size="12" fill="var(--mute)" font-family="inherit">${esc(g.name.slice(0,24))}</text>
+      <rect x="${lw}" y="${y+4}" width="${bw*g.planned/max}" height="8" rx="3" fill="var(--teal)"/>
+      <rect x="${lw}" y="${y+14}" width="${bw*g.spent/max}" height="8" rx="3" fill="var(--gold)"/>`; }).join('')}</svg>`
+    : '<div class="empty"><b>Nothing to chart yet</b>Plan a few lines and add expenses.</div>';
+
+  // 50/30/20
+  const needsRe=/housing|food|transport|bills|insurance|health|family|emi|utilit/i, saveRe=/saving|invest/i;
+  let needs=0,wants=0,save=0;
+  c.groups.forEach(g=>{ if(saveRe.test(g.name)) save+=g.planned; else if(needsRe.test(g.name)) needs+=g.planned; else wants+=g.planned; });
+  const inc=c.income||1;
+  const rows=[['Needs',needs,50,'var(--teal)'],['Wants',wants,30,'var(--gold)'],['Saving & investing',save,20,'var(--green)']];
+  $('#rule').innerHTML = c.income ? rows.map(([n,v,t,col])=>{ const p=v/inc*100; const ok=n==='Saving & investing'?p>=t:p<=t;
+    return `<div class="rule"><div><div style="display:flex;justify-content:space-between"><b>${n}</b><span class="num">${fmt(v)} · ${p.toFixed(0)}%</span></div><div class="bar"><i style="width:${clamp(p,0,100)}%;background:${col}"></i><em style="left:${t}%"></em></div><small>target ${n==='Saving & investing'?'≥':'≤'} ${t}%</small></div><span class="pill ${ok?'ok':'warn'}">${ok?'on track':'review'}</span></div>`; }).join('')
+    : '<div class="empty"><b>Add income first</b>The split is shown as a share of income.</div>';
+
+  // trend
+  const pts=[]; for(let i=5;i>=0;i--){ const p=shiftMonth(cur.y,cur.m,-i); const md=state.months[mkey(p.y,p.m)]; pts.push({l:MONTHS[p.m].slice(0,3), inc: md?md.income.reduce((s,x)=>s+x.amount,0):0, sp: md?md.tx.reduce((s,x)=>s+x.amount,0):0}); }
+  const tmax=Math.max(1,...pts.map(p=>Math.max(p.inc,p.sp))); const TW=520,TH=170,base=140;
+  $('#chartTrend').innerHTML=`<svg viewBox="0 0 ${TW} ${TH}" role="img" aria-label="Income and spending over six months">${pts.map((p,i)=>{ const x=20+i*82; const hi=110*p.inc/tmax, hs=110*p.sp/tmax;
+    return `<rect x="${x}" y="${base-hi}" width="26" height="${hi}" rx="3" fill="var(--teal)"/><rect x="${x+30}" y="${base-hs}" width="26" height="${hs}" rx="3" fill="var(--gold)"/><text x="${x+28}" y="${TH-8}" font-size="12" text-anchor="middle" fill="var(--mute)" font-family="inherit">${p.l}</text>`; }).join('')}</svg>`;
+
+  // top lines
+  const lines=[]; c.groups.forEach(g=>g.items.forEach(it=>{ if(it.spent) lines.push({n:it.name,g:g.name,s:it.spent,p:it.planned}); }));
+  lines.sort((a,b)=>b.s-a.s);
+  $('#topLines').innerHTML = lines.length ? lines.slice(0,8).map(l=>`<div class="kv"><span>${esc(l.n)} <small style="color:var(--mute)">· ${esc(l.g)}</small></span><b class="num ${l.s>l.p?'':''}" style="${l.s>l.p?'color:var(--rose)':''}">${fmt(l.s)}</b></div>`).join('') : '<div class="empty"><b>No spending recorded</b>Expenses you add will rank here.</div>';
+}
+
+function renderAll(){ renderMonthLabel(); const c=calc(); renderLTP(c); renderLedger(c); renderIncome(c); renderSummary(c); renderTxSelect(c); renderTx(c); renderInsights(c); }
+
+/* ---------------- events: budget ---------------- */
+$('#ledger').addEventListener('input',e=>{
+  const act=e.target.dataset.act; if(!act) return; const md=month();
+  const gEl=e.target.closest('.group'); const g=md.groups.find(x=>x.id===gEl.dataset.g); if(!g) return;
+  if(act==='gname'){ g.name=e.target.value; save(); return; }
+  const iEl=e.target.closest('.item'); const it=iEl&&g.items.find(x=>x.id===iEl.dataset.i); if(!it) return;
+  if(act==='iname'){ it.name=e.target.value; save(); }
+  if(act==='planned'){ it.planned=Math.max(0,parseFloat(e.target.value)||0); save(); const c=calc(); renderLTP(c); renderSummary(c);
+    const gc=c.groups.find(x=>x.id===g.id), ic=gc.items.find(x=>x.id===it.id);
+    iEl.querySelectorAll('.ro')[1].textContent=fmtS(ic.avail); iEl.querySelectorAll('.ro')[1].classList.toggle('over',ic.avail<0);
+    const foot=gEl.querySelector('.group-foot').querySelectorAll('.r'); foot[0].textContent=fmt(gc.planned); foot[2].textContent=fmtS(gc.planned+gc.roll-gc.spent); }
+});
+$('#ledger').addEventListener('change',e=>{ if(e.target.dataset.act==='planned'||e.target.dataset.act==='gname'||e.target.dataset.act==='iname') renderAll(); });
+$('#ledger').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const act=b.dataset.act; const md=month();
+  const gEl=b.closest('.group'); const gi=md.groups.findIndex(x=>x.id===gEl.dataset.g); const g=md.groups[gi]; if(!g) return;
+  if(act==='gdel'){ if(g.items.some(i=>i.planned)&&!confirm(`Delete "${g.name}" and its ${g.items.length} lines?`)) return; md.groups.splice(gi,1); save(); renderAll(); toast('Group deleted'); }
+  if(act==='iadd'||act==='fadd'){ g.items.push({id:uid(),name:act==='fadd'?'New fund':'New line',planned:0,fund:act==='fadd'}); save(); renderAll(); const last=gEl.querySelector('.item:last-of-type input[data-act="iname"]'); if(last){last.focus();last.select();} }
+  if(act==='idel'){ const iEl=b.closest('.item'); const ii=g.items.findIndex(x=>x.id===iEl.dataset.i); if(ii>-1){ const it=g.items[ii]; const used=md.tx.some(t=>t.itemId===it.id); if(used&&!confirm(`"${it.name}" has expenses logged. Delete anyway? They will become unassigned.`)) return; g.items.splice(ii,1); save(); renderAll(); } }
+});
+$('#addGroup').onclick=()=>{ month().groups.push({id:uid(),name:'New group',items:[{id:uid(),name:'New line',planned:0,fund:false}]}); save(); renderAll(); const g=$('#ledger .group:last-of-type input[data-act="gname"]'); if(g){g.focus();g.select();} };
+$('#incAdd').onclick=()=>{ const n=$('#incName').value.trim(), a=parseFloat($('#incAmt').value); if(!n||!(a>0)){ toast('Give the income a name and an amount'); return; } month().income.push({id:uid(),name:n,amount:a}); $('#incName').value=''; $('#incAmt').value=''; save(); renderAll(); toast('Income added'); };
+$('#incAmt').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#incAdd').click(); });
+$('#incomeList').addEventListener('click',e=>{ const b=e.target.closest('[data-act="incdel"]'); if(!b) return; const id=b.closest('[data-inc]').dataset.inc; const md=month(); md.income=md.income.filter(i=>i.id!==id); save(); renderAll(); });
+$('#copyPrev').onclick=()=>{ const p=prevMonthData(); if(!p){ toast('No plan found for last month'); return; } const md=month(); if(md.groups.some(g=>g.items.some(i=>i.planned))&&!confirm('Replace this month\'s plan with last month\'s? Expenses already logged stay.')) return;
+  const nameMap={}; md.groups.forEach(g=>g.items.forEach(i=>nameMap[g.name+'|'+i.name]=i.id));
+  md.groups=p.groups.map(g=>({id:uid(),name:g.name,items:g.items.map(i=>{ const old=nameMap[g.name+'|'+i.name]; return {id:old||uid(),name:i.name,planned:i.planned,fund:i.fund}; })}));
+  md.income=p.income.map(i=>({id:uid(),name:i.name,amount:i.amount})); save(); renderAll(); toast('Copied last month\'s plan'); };
+$('#resetBtn').onclick=()=>{ if(!confirm('Reset '+MONTHS[cur.m]+' to the default template? Income and expenses for this month will be removed.')) return; state.months[mkey(cur.y,cur.m)]=newMonth(); save(); renderAll(); toast('Month reset'); };
+$('#exportBtn').onclick=()=>{ try{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='rupeezero-backup.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast('Backup downloaded'); }catch(e){ toast('Download blocked in this viewer — copy from browser dev tools instead'); } };
+$('#prevM').onclick=()=>{ cur=shiftMonth(cur.y,cur.m,-1); renderAll(); };
+$('#nextM').onclick=()=>{ cur=shiftMonth(cur.y,cur.m,1); renderAll(); };
+
+/* ---------------- events: transactions ---------------- */
+$('#txDate').value=now.toISOString().slice(0,10);
+$('#txForm').addEventListener('submit',e=>{ e.preventDefault(); const md=month(); const d=$('#txDate').value, desc=$('#txDesc').value.trim(), a=parseFloat($('#txAmt').value), cat=$('#txCat').value;
+  if(!d||!desc||!(a>0)) return;
+  const dm=new Date(d+'T00:00'); if(dm.getFullYear()!==cur.y||dm.getMonth()!==cur.m){ cur={y:dm.getFullYear(),m:dm.getMonth()}; }
+  month().tx.push({id:uid(),date:d,desc,amount:a,itemId:cat}); $('#txDesc').value=''; $('#txAmt').value=''; save(); renderAll(); toast('Expense added'); $('#txDesc').focus(); });
+$('#txList').addEventListener('click',e=>{ const b=e.target.closest('[data-act="txdel"]'); if(!b) return; const id=b.closest('[data-tx]').dataset.tx; const md=month(); md.tx=md.tx.filter(t=>t.id!==id); save(); renderAll(); });
+
+/* ---------------- tabs ---------------- */
+function showTab(name){ document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name))); document.querySelectorAll('.panel').forEach(p=>p.hidden = p.id!=='panel-'+name); $('#monthTitle').textContent={budget:'Budget',tx:'Transactions',tax:'Tax planner',insights:'Insights'}[name]; if(name==='tax') renderTax(); if(name==='insights') renderInsights(calc()); }
+document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>showTab(el.dataset.tab)));
+
+/* ---------------- theme ---------------- */
+function applyTheme(){ if(state.theme) document.documentElement.dataset.theme=state.theme; else delete document.documentElement.dataset.theme; }
+$('#themeBtn').onclick=()=>{ const dark=matchMedia('(prefers-color-scheme: dark)').matches; const curT=state.theme||(dark?'dark':'light'); state.theme=curT==='dark'?'light':'dark'; save(); applyTheme(); };
+applyTheme();
+
+/* ================= TAX ENGINE — FY 2026-27 (AY 2027-28) ================= */
+const NEW_SLABS=[[400000,0],[800000,.05],[1200000,.10],[1600000,.15],[2000000,.20],[2400000,.25],[Infinity,.30]];
+function oldSlabs(age){ const ex=age>=80?500000:age>=60?300000:250000; return [[ex,0],[500000,.05],[1000000,.20],[Infinity,.30]]; }
+function slabTax(inc,slabs){ let t=0,prev=0; for(const [lim,r] of slabs){ if(inc>prev) t+=(Math.min(inc,lim)-prev)*r; prev=lim; if(inc<=lim) break; } return t; }
+function surchargeFor(tax,inc,isNew){ const bands=isNew?[[5e6,.10],[1e7,.15],[2e7,.25]]:[[5e6,.10],[1e7,.15],[2e7,.25],[5e7,.37]]; let r=0; for(const [lim,rate] of bands) if(inc>lim) r=rate; return tax*r; }
+function withSurcharge(inc,taxFn,isNew){
+  const base=taxFn(inc); let total=base+surchargeFor(base,inc,isNew);
+  const thresholds=[5e6,1e7,2e7,5e7]; // marginal relief on surcharge
+  for(const th of thresholds){ if(inc>th){ const tAt=taxFn(th); const cap=tAt+surchargeFor(tAt,th,isNew)+(inc-th); if(total>cap) total=cap; } }
+  return total;
+}
+function computeTax(p){
+  const gross=p.gross, basic=gross*p.basicPct/100, other=p.other;
+  // ---- New regime
+  const empNpsNew=Math.min(p.empNPS, basic*0.14);
+  const tiNew=Math.max(0, gross - 75000 - empNpsNew + other);
+  const taxNewFn = ti => { let t=slabTax(ti,NEW_SLABS); if(ti<=1200000) t=Math.max(0,t-60000); else t=Math.min(t, ti-1200000); return t; };
+  let newTax=withSurcharge(tiNew, taxNewFn, true); const newCess=newTax*0.04; newTax+=newCess;
+  // ---- Old regime
+  const hraEx = p.hra>0 && p.rent>0 ? Math.max(0, Math.min(p.hra, p.rent-0.10*basic, basic*p.metro)) : 0;
+  const d80c=Math.min(p.c80,150000), d80d=Math.min(p.d80, p.age>=60?100000:75000), dnps=Math.min(p.nps,50000), d24b=Math.min(p.i24b,200000), empNpsOld=Math.min(p.empNPS, basic*0.10);
+  const oldDed=50000+hraEx+d80c+d80d+dnps+d24b+p.otherDed+empNpsOld;
+  const tiOld=Math.max(0, gross+other-oldDed);
+  const taxOldFn = ti => { let t=slabTax(ti,oldSlabs(p.age)); if(ti<=500000) t=Math.max(0,t-12500); return t; };
+  let oldTax=withSurcharge(tiOld, taxOldFn, false); const oldCess=oldTax*0.04; oldTax+=oldCess;
+  return {tiNew,newTax,newCess,tiOld,oldTax,oldCess,hraEx,d80c,d80d,dnps,d24b,oldDed,basic,empNpsNew,empNpsOld};
+}
+const taxIds=['tGross','tBasicPct','tAge','tOther','tHRA','tRent','tMetro','t80C','t80D','tNPS','t24b','tOtherDed','tEmpNPS'];
+function readTax(){ const v=id=>parseFloat($('#'+id).value)||0; return {gross:v('tGross'),basicPct:v('tBasicPct')||40,age:v('tAge'),other:v('tOther'),hra:v('tHRA'),rent:v('tRent'),metro:parseFloat($('#tMetro').value)||0.5,c80:v('t80C'),d80:v('t80D'),nps:v('tNPS'),i24b:v('t24b'),otherDed:v('tOtherDed'),empNPS:v('tEmpNPS')}; }
+taxIds.forEach(id=>{ if(state.tax[id]!=null) $('#'+id).value=state.tax[id]; $('#'+id).addEventListener('input',()=>{ state.tax[id]=$('#'+id).value; save(); renderTax(); }); });
+let lastTax=null;
+function renderTax(){
+  const p=readTax(); const r=computeTax(p); lastTax={p,r};
+  $('#rNewTax').textContent=fmt(r.newTax); $('#rOldTax').textContent=fmt(r.oldTax);
+  $('#rNewSub').textContent=`taxable ${fmt(r.tiNew)} · ${fmt(r.newTax/12)}/month`; $('#rOldSub').textContent=`taxable ${fmt(r.tiOld)} · ${fmt(r.oldTax/12)}/month`;
+  const newWins=r.newTax<=r.oldTax; $('#rNew').classList.toggle('win',newWins&&p.gross>0); $('#rOld').classList.toggle('win',!newWins&&p.gross>0);
+  const v=$('#verdict');
+  if(!p.gross){ v.innerHTML='<span>Enter your gross salary to compare regimes.</span>'; }
+  else if(Math.abs(r.newTax-r.oldTax)<1){ v.innerHTML='<span><b>Both regimes cost the same.</b> Stay with the new regime — less paperwork.</span>'; }
+  else { const diff=Math.abs(r.newTax-r.oldTax); v.innerHTML=`<span><b>${newWins?'New regime':'Old regime'} keeps more of your salary.</b><br><span style="color:var(--mute);font-size:14px">${newWins?'No proofs needed; it is the default in your ITR.':'Submit Form 12BB to your employer and opt in with Form 10-IEA when filing.'}</span></span><span class="save num">saves ${fmt(diff)}/yr</span>`; }
+  const rows=[
+    ['Gross salary',p.gross],['Other income',p.other],
+    ['<b>New regime</b>',''],['Standard deduction',-75000],['Employer NPS (up to 14% of basic)',-r.empNpsNew],['Taxable income',r.tiNew],['Tax after 87A rebate & surcharge',r.newTax-r.newCess],['Health & education cess 4%',r.newCess],
+    ['<b>Old regime</b>',''],['Standard deduction',-50000],['HRA exemption',-r.hraEx],['80C',-r.d80c],['80D',-r.d80d],['80CCD(1B) NPS',-r.dnps],['24(b) home-loan interest',-r.d24b],['Employer NPS (up to 10% of basic)',-r.empNpsOld],['Other deductions',-p.otherDed],['Taxable income',r.tiOld],['Tax after 87A rebate & surcharge',r.oldTax-r.oldCess],['Health & education cess 4%',r.oldCess]
+  ];
+  $('#brk').innerHTML=rows.map(([l,val])=>`<tr class="${val===''?'tot':''}"><td>${l}</td><td class="num">${val===''?'':fmtS(val)}</td></tr>`).join('');
+  // tips
+  const tips=[];
+  if(p.gross>0){
+    if(p.gross<=1275000) tips.push('Gross salary up to ₹12.75 lakh is tax-free under the new regime once the ₹75,000 standard deduction and 87A rebate apply — the old regime almost never beats that.');
+    if(r.tiNew>1200000 && r.tiNew<1275000) tips.push('You are in the marginal-relief zone just above ₹12 lakh: your tax cannot exceed the amount by which taxable income crosses ₹12 lakh, so a small extra employer-NPS contribution could bring you back to zero.');
+    if(p.empNPS<r.basic*0.14) tips.push(`Employer NPS is the one big deduction that works in the new regime. Asking payroll to route up to ${fmt(r.basic*0.14)} (14% of basic) into NPS would cut taxable income without touching in-hand much.`);
+    if(!newWins){ if(p.c80<150000) tips.push(`80C still has ${fmt(150000-p.c80)} of room — EPF already counts, so top up with PPF or ELSS.`); if(p.nps<50000) tips.push(`80CCD(1B) allows another ${fmt(50000-p.nps)} in your own NPS on top of 80C.`); if(p.rent>0&&p.hra===0) tips.push('You pay rent but receive no HRA — Section 80GG allows up to ₹60,000 a year (least of three tests); add it under other deductions.'); }
+    else if(r.oldTax>r.newTax){ tips.push(`The old regime would need roughly ${fmt((r.oldTax-r.newTax)/0.312)} more in deductions than the ${fmt(r.oldDed)} entered to catch up — usually only home-loan interest plus a full 80C and HRA gets there.`); }
+    if(r.tiNew>5000000||r.tiOld>5000000) tips.push('Above ₹50 lakh, surcharge applies; marginal relief is applied at each threshold in this estimate.');
+  } else tips.push('Fill in your salary on the left. Everything recalculates as you type and is saved for next time.');
+  $('#tips').innerHTML=tips.map(t=>`<li>${t}</li>`).join('');
+}
+$('#pushTDS').onclick=()=>{ if(!lastTax||!lastTax.p.gross){ toast('Enter salary first'); return; } const t=Math.min(lastTax.r.newTax,lastTax.r.oldTax)/12; const md=month(); let g=md.groups.find(x=>/tax/i.test(x.name)); if(!g){ g={id:uid(),name:'Taxes & statutory',items:[]}; md.groups.unshift(g); } let it=g.items.find(i=>/tds|income tax/i.test(i.name)); if(!it){ it={id:uid(),name:'Income tax (TDS)',planned:0,fund:false}; g.items.push(it); } it.planned=Math.round(t); save(); renderAll(); showTab('budget'); toast('Monthly TDS added to budget'); };
+$('#pushSalary').onclick=()=>{ if(!lastTax||!lastTax.p.gross){ toast('Enter salary first'); return; } const {p,r}=lastTax; const tax=Math.min(r.newTax,r.oldTax); const epf=r.basic*0.12; const inhand=Math.round((p.gross-tax-epf)/12); const md=month(); let inc=md.income.find(i=>/salary/i.test(i.name)); if(inc) inc.amount=inhand; else md.income.push({id:uid(),name:'Salary (in hand)',amount:inhand}); save(); renderAll(); showTab('budget'); toast('In-hand salary set to '+fmt(inhand)); };
+
+renderAll(); renderTax();
+})();
+</script>
+</body>
+</html>
